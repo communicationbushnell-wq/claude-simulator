@@ -1,0 +1,2045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Tactics Simulator</title>
+<meta name="description" content="A timed practice college exam that coaches twelve research-rated test-taking tactics and debriefs which ones each student used.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..800&family=Archivo+Narrow:wght@500..700&family=IBM+Plex+Mono:wght@500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&display=swap">
+<style>
+[hidden]{display:none!important}
+:root{
+  /* Layout: one exam sheet on a cool desk. A proctor bar with the clock pins to the top; coaching sits in the sheet's right margin in purple pen and drops below the item on phones. */
+  --desk:#E7EBF0;
+  --sheet:#FFFFFF;
+  --sheet-2:#F5F7FA;
+  --ink:#16202D;
+  --ink-2:#465264;
+  --ink-3:#6B7586;
+  --rule:#D3DAE3;
+  --rule-2:#E5EAF0;
+  --ruling:#C9D6EE;
+  --blue:#1E45A4;
+  --blue-ink:#FFFFFF;
+  --blue-soft:#E3EAF9;
+  --blue-line:#97AEE2;
+  --pen:#5A3A9F;
+  --pen-soft:#F2EDFB;
+  --pen-line:#CDBEF0;
+  --hl:#FFE45E;
+  --hl-ink:#16202D;
+  --graphite:#262A31;
+  --graphite-ink:#FFFFFF;
+  --ok:#126B4A;
+  --ok-soft:#E0F2E9;
+  --bad:#AA2A21;
+  --bad-soft:#FBE6E3;
+  --warn:#8A5200;
+  --warn-soft:#FFEFD2;
+  --s1:#1E45A4;
+  --s2:#2A8A80;
+  --s3:#A8721A;
+  --s4:#5A3A9F;
+  --shadow:0 1px 0 rgba(22,32,45,.05),0 8px 24px -14px rgba(22,32,45,.35);
+  --f-display:'Archivo Narrow','Arial Narrow','Roboto Condensed',sans-serif;
+  --f-ui:'Archivo',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-exam:'Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#0E131A;--sheet:#161D27;--sheet-2:#1B2330;--ink:#E6EBF2;--ink-2:#AAB4C3;--ink-3:#8590A1;
+    --rule:#2B3543;--rule-2:#222B37;--ruling:#2A3756;
+    --blue:#8DADFF;--blue-ink:#0B1424;--blue-soft:#1B2945;--blue-line:#3D5A9E;
+    --pen:#BEA9F6;--pen-soft:#221B36;--pen-line:#4B3C7A;
+    --hl:#E3C53A;--hl-ink:#15120A;--graphite:#DCE2EB;--graphite-ink:#111720;
+    --ok:#62D2A2;--ok-soft:#11281E;--bad:#FF8E84;--bad-soft:#321715;--warn:#F2B75C;--warn-soft:#2C2010;
+    --s1:#8DADFF;--s2:#5FC6BA;--s3:#E1B263;--s4:#BEA9F6;
+    --shadow:0 1px 0 rgba(0,0,0,.35),0 10px 30px -16px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#0E131A;--sheet:#161D27;--sheet-2:#1B2330;--ink:#E6EBF2;--ink-2:#AAB4C3;--ink-3:#8590A1;
+  --rule:#2B3543;--rule-2:#222B37;--ruling:#2A3756;
+  --blue:#8DADFF;--blue-ink:#0B1424;--blue-soft:#1B2945;--blue-line:#3D5A9E;
+  --pen:#BEA9F6;--pen-soft:#221B36;--pen-line:#4B3C7A;
+  --hl:#E3C53A;--hl-ink:#15120A;--graphite:#DCE2EB;--graphite-ink:#111720;
+  --ok:#62D2A2;--ok-soft:#11281E;--bad:#FF8E84;--bad-soft:#321715;--warn:#F2B75C;--warn-soft:#2C2010;
+  --s1:#8DADFF;--s2:#5FC6BA;--s3:#E1B263;--s4:#BEA9F6;
+  --shadow:0 1px 0 rgba(0,0,0,.35),0 10px 30px -16px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--sheet)}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--blue);text-underline-offset:2px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+.min0{min-width:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap.narrow{max-width:820px}
+
+.eyebrow{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.09em;font-size:13px;font-weight:600;color:var(--ink-2)}
+.h-page{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4.6vw,44px);line-height:1.05;letter-spacing:-.005em}
+.h-sheet{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,3.4vw,32px);line-height:1.1}
+.h-sec{font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.15}
+.h-sub{font-family:var(--f-display);font-weight:700;font-size:20px;line-height:1.2}
+
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;box-shadow:var(--shadow)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r);border:1px solid var(--rule);background:var(--sheet);color:var(--ink);font-weight:600;font-size:15px;line-height:1.2;cursor:pointer;text-decoration:none;text-align:center}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--blue);padding:0 10px}
+.btn.ghost:hover{border-color:var(--rule)}
+.btn.small{min-height:36px;padding:0 12px;font-size:14px}
+.btn.big{min-height:52px;padding:0 24px;font-size:16px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn svg{flex:none}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:flex-end}
+
+/* answer-sheet bubble */
+.bubble{display:inline-grid;place-items:center;flex:none;width:32px;height:22px;border-radius:50%;border:1.5px solid var(--ink-2);background:var(--sheet);font-family:var(--f-display);font-weight:700;font-size:13px;line-height:1;color:var(--ink-2)}
+.bubble.on,.is-sel .bubble{background:var(--graphite);border-color:var(--graphite);color:var(--graphite-ink)}
+.bubble.dot{width:22px;height:22px}
+
+/* badges & chips */
+.badge{display:inline-block;font-family:var(--f-display);font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:3px;border:1px solid var(--rule);color:var(--ink-2);white-space:nowrap;line-height:1.5}
+.badge.strong{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.badge.moderate{color:var(--blue);border-color:var(--blue-line);background:var(--blue-soft)}
+.badge.mixed{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.badge.logic{color:var(--ink);border-color:var(--ink-3);background:var(--sheet-2)}
+.badge.limited{color:var(--ink-3);border-style:dashed}
+.chip{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap;line-height:1.4}
+.chip.used{color:var(--ok);background:var(--ok-soft)}
+.chip.partial{color:var(--warn);background:var(--warn-soft)}
+.chip.missed{color:var(--bad);background:var(--bad-soft)}
+.chip.na{color:var(--ink-3);border-color:var(--rule)}
+
+/* forms */
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{padding:0}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;line-height:1.45}
+.check input{accent-color:var(--blue);width:18px;height:18px;margin:2px 0 0;flex:none}
+textarea{display:block;width:100%;font-family:var(--f-exam);font-size:17px;line-height:1.6;padding:12px 14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);color:var(--ink);resize:vertical}
+textarea:focus{border-color:var(--blue-line)}
+textarea::placeholder{color:var(--ink-3)}
+
+/* ---------- HOME ---------- */
+.home{padding-block:40px 72px;display:grid;gap:48px}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:44px;align-items:start}
+.hero-main{display:grid;gap:20px;min-width:0}
+.hero h1{font-family:var(--f-display);font-weight:700;font-size:clamp(42px,6.6vw,72px);line-height:.94;letter-spacing:-.01em;text-transform:uppercase}
+.lede{font-family:var(--f-exam);font-size:19px;line-height:1.55;color:var(--ink-2);max-width:60ch}
+.setup{padding:24px;display:grid;gap:22px}
+.setup legend{margin-bottom:10px}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode-card{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;border:1px solid var(--rule);border-radius:var(--r);padding:14px 16px;cursor:pointer;background:var(--sheet)}
+.mode-card input{position:absolute;opacity:0;width:1px;height:1px}
+.mode-card .bubble{grid-row:1/3;margin-top:1px}
+.mode-card.on{border-color:var(--blue);background:var(--blue-soft)}
+.mode-card:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.mc-title{font-weight:700;font-size:16px}
+.mc-desc{font-size:14px;color:var(--ink-2);line-height:1.45}
+.segopts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:400px;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.segopt{position:relative;padding:0 8px;min-height:42px;display:flex;align-items:center;justify-content:center;white-space:nowrap;font-weight:600;font-size:15px;cursor:pointer;border-right:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.segopt:last-child{border-right:0}
+.segopt.on{background:var(--ink);color:var(--sheet)}
+.segopt:focus-within{outline:2px solid var(--blue);outline-offset:-3px}
+.fine{font-size:13.5px;color:var(--ink-2);margin-top:8px}
+.setup-go{display:grid;gap:8px;justify-items:start}
+.resume{padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;border-color:var(--blue-line)}
+.resume-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.specimen{margin:0;display:grid;gap:14px;align-content:start;padding-top:10px}
+.spec-sheet{overflow:hidden}
+.spec-body{padding:18px 20px 20px;display:grid;gap:14px}
+.spec-opts{display:grid;gap:6px}
+.sopt{display:flex;align-items:center;gap:12px;padding:7px 10px;border:1px solid var(--rule-2);border-radius:var(--r);font-family:var(--f-exam);font-size:16px}
+.sopt.is-elim span:last-child{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-3)}
+.sopt.is-elim .bubble{border-style:dashed;opacity:.6}
+.sopt.is-sel{border-color:var(--ink-2);background:var(--sheet-2)}
+.spec-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.mini-seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.mini-seg b{font-weight:600;padding:3px 9px;border-right:1px solid var(--rule)}
+.mini-seg b:last-child{border-right:0}
+.mini-seg b.on{background:var(--ink);color:var(--sheet)}
+.mini-flag{display:inline-flex;align-items:center;gap:5px;color:var(--pen);font-weight:600;border:1px solid var(--pen-line);background:var(--pen-soft);border-radius:4px;padding:3px 9px}
+.spec-cap{font-size:13px;color:var(--ink-2);display:flex;gap:6px 16px;flex-wrap:wrap}
+.spec-cap span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink-3);margin-right:6px;vertical-align:1px}
+
+.tindex{display:grid;gap:18px}
+.tindex-head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;justify-content:space-between}
+.tlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.tlist li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-top:1px solid var(--rule);align-items:baseline}
+.tnum{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tname{font-weight:700}
+.tshort{grid-column:2/4;font-size:14px;color:var(--ink-2)}
+.tablewrap{overflow-x:auto}
+table.hist{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums;min-width:560px}
+table.hist th{text-align:left;font-family:var(--f-display);text-transform:uppercase;letter-spacing:.07em;font-size:12px;color:var(--ink-2);padding:8px 10px;border-bottom:1px solid var(--rule)}
+table.hist td{padding:9px 10px;border-bottom:1px solid var(--rule-2)}
+
+/* ---------- PROCTOR BAR ---------- */
+.proctor{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--sheet);border-bottom:1px solid var(--rule)}
+.proctor-in{display:flex;align-items:center;flex-wrap:wrap;gap:8px 22px;min-height:62px;padding-block:8px}
+.pb-id{display:grid;gap:0;min-width:0}
+.pb-course{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:700}
+.pb-mode{font-size:13px;color:var(--ink-2)}
+.pb-mode.coached{color:var(--pen)}
+.pb-clock{display:flex;align-items:baseline;gap:8px}
+.pb-time{font-family:var(--f-mono);font-size:28px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.pb-time.low{color:var(--bad)}
+.pb-of{font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.pace{flex:1 1 200px;min-width:0;display:grid;gap:5px}
+.pace-top{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.pace-label{font-weight:600;color:var(--ink-2)}
+.pace-text{color:var(--ink-2);font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.pace-bar{height:7px;border-radius:4px;background:var(--rule-2);position:relative;overflow:hidden}
+.pace-fill{position:absolute;inset:0 auto 0 0;background:var(--blue);border-radius:4px}
+.pace-fill.over{background:var(--warn)}
+.pb-actions{display:flex;gap:8px;margin-left:auto}
+@media (max-width:640px){
+  .pb-id{display:none}
+  .proctor-in{gap:6px 14px}
+  .pb-time{font-size:24px}
+  .pace{order:3;flex-basis:100%}
+}
+
+.pausecover{position:fixed;inset:0;z-index:15;background:var(--desk);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.pause-card{max-width:440px;padding:28px;display:grid;gap:14px;text-align:center;justify-items:center}
+
+/* ---------- SHARED LAYOUTS ---------- */
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.one-col{display:grid;grid-template-columns:minmax(0,860px);justify-content:center;gap:24px}
+.stack-col{display:grid;gap:24px;min-width:0}
+@media (max-width:980px){.two-col{grid-template-columns:minmax(0,1fr)}}
+.page-pad{padding-block:24px 64px;display:grid;gap:20px}
+
+/* margin notes (purple pen) */
+.margin{display:grid;gap:12px;align-content:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px)}
+@media (max-width:980px){.margin{position:static}}
+.note{background:var(--pen-soft);border:1px solid var(--pen-line);border-radius:4px;padding:13px 15px;display:grid;gap:7px}
+.note-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.09em;font-size:12px;font-weight:700;color:var(--pen)}
+.note-text{font-family:var(--f-exam);font-style:italic;font-size:16.5px;line-height:1.5;color:var(--pen)}
+.note.warnnote{background:var(--warn-soft);border-color:var(--warn)}
+.note.warnnote .note-label,.note.warnnote .note-text{color:var(--warn)}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:3px 0 0}
+.steps li{font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid var(--pen-line);color:var(--pen);background:var(--sheet)}
+.steps li.done{background:var(--pen);color:var(--sheet);border-color:var(--pen)}
+.why{border:1px solid var(--rule);border-radius:4px;background:var(--sheet);font-size:14px}
+.why summary{cursor:pointer;padding:10px 13px;font-weight:600;color:var(--ink-2);list-style-position:inside}
+.why[open] summary{border-bottom:1px solid var(--rule-2)}
+.why p{padding:10px 13px 0;line-height:1.5}
+.why .why-foot{display:flex;gap:10px;align-items:center;padding-bottom:12px}
+
+/* ---------- RESET ---------- */
+.reset-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.reset-grid{grid-template-columns:1fr}}
+.rcard{padding:20px 22px;display:grid;gap:12px;align-content:start}
+.exam-text{font-family:var(--f-exam);font-size:17.5px;line-height:1.6}
+.rtimer{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.rtimer .mono{font-size:18px;font-weight:600}
+.evid{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14.5px;color:var(--ink-2)}
+
+/* ---------- COVER ---------- */
+.cover{padding:30px 34px 34px;display:grid;gap:22px}
+@media (max-width:560px){.cover{padding:22px 18px}}
+.cover-top{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:10px;font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:13px}
+.cover h1{font-family:var(--f-exam);font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.15}
+.cover-meta{display:flex;gap:6px 28px;flex-wrap:wrap;font-family:var(--f-mono);font-size:14px;color:var(--ink-2)}
+.dir{display:grid;gap:6px;font-family:var(--f-exam);font-size:17.5px;line-height:1.6}
+.dir h2{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.07em;font-size:15px;font-weight:700;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:4px}
+.dir h2 .pts{font-family:var(--f-mono);text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink-2);font-size:14px}
+.dir ol{margin:0;padding-left:22px;display:grid;gap:4px}
+.line{border-radius:3px;padding:1px 3px;margin:0 -3px;transition:background .2s}
+.line.pointer{background:var(--pen-soft);box-shadow:inset 0 -2px 0 var(--pen)}
+.cover-foot{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:600;color:var(--ink-2);border-top:2px solid var(--ink);padding-top:10px}
+
+.iq-sec{padding:22px 24px;display:grid;gap:10px}
+.iq-list{list-style:none;margin:0;padding:0;counter-reset:iq}
+.iq{display:grid;gap:9px;padding:14px 0;border-top:1px solid var(--rule-2);counter-increment:iq}
+.iq-q{font-weight:600}
+.iq-q::before{content:counter(iq) ". ";color:var(--ink-3)}
+.iq-opts{display:flex;flex-wrap:wrap;gap:8px}
+.iq-opt{border:1px solid var(--rule);background:var(--sheet);border-radius:var(--r);padding:8px 13px;cursor:pointer;text-align:left;font-size:15px;min-height:40px;line-height:1.35}
+.iq-opt:hover{border-color:var(--ink-3)}
+.iq-opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:600}
+.iq-opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.fb{font-size:14.5px;line-height:1.45}
+.fb.ok{color:var(--ok)}
+.fb.bad{color:var(--bad)}
+.fb.warn{color:var(--warn)}
+.fb.info{color:var(--ink-2)}
+
+/* ---------- PLAN ---------- */
+.plan-sheet{padding:24px 28px;display:grid;gap:20px}
+@media (max-width:560px){.plan-sheet{padding:20px 16px}}
+table.struct{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.struct th{text-align:left;font-family:var(--f-display);text-transform:uppercase;letter-spacing:.07em;font-size:12px;color:var(--ink-2);padding:6px 8px;border-bottom:1px solid var(--rule)}
+table.struct td{padding:9px 8px;border-bottom:1px solid var(--rule-2)}
+table.struct td.n,table.struct th.n{text-align:right}
+.plan-inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.plan-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.num{display:grid;gap:6px}
+.num label{font-weight:600;font-size:14px}
+.num input{width:100%;min-height:46px;font-family:var(--f-mono);font-size:20px;padding:0 10px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);color:var(--ink)}
+.num .unit{font-size:12.5px;color:var(--ink-3)}
+.fb-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.share{display:grid;gap:8px;margin-top:6px}
+.share-row{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:center;font-size:13px;color:var(--ink-2)}
+.stack{display:flex;height:16px;border-radius:3px;overflow:hidden;background:var(--rule-2)}
+.stack span{display:block;height:100%;border-right:2px solid var(--sheet)}
+.stack span:last-child{border-right:0}
+.seg-p1,.k-p1{background:var(--s1)}
+.seg-p2,.k-p2{background:var(--s2)}
+.seg-p3,.k-p3{background:var(--s3)}
+.seg-review,.k-review{background:var(--s4)}
+.share-key,.tkey{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);padding-left:86px}
+.share-key i,.tkey i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media (max-width:560px){.share-key,.tkey{padding-left:0}}
+
+/* ---------- EXAM ---------- */
+.navi{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end;padding-block:18px 10px}
+.navi-part{display:grid;gap:6px}
+.navi-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:var(--ink-2)}
+.navi-cells,.jump{display:flex;gap:5px;flex-wrap:wrap}
+.cell{position:relative;min-width:34px;height:34px;padding:0 6px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);font-family:var(--f-display);font-weight:700;font-size:14px;cursor:pointer;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.cell:hover{border-color:var(--ink-3)}
+.cell.done{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.cell.flag::after{content:"";position:absolute;top:-1px;right:-1px;border-style:solid;border-width:0 11px 11px 0;border-color:transparent var(--pen) transparent transparent}
+.cell.cur{outline:2px solid var(--blue);outline-offset:2px}
+.navi-extra{display:flex;gap:6px;align-items:center;margin-left:auto}
+.navi-legend{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3);width:100%}
+.navi-legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{display:inline-block;width:12px;height:12px;border:1px solid var(--rule);border-radius:2px;background:var(--sheet);position:relative}
+.lg.done{background:var(--ink);border-color:var(--ink)}
+.lg.flag::after{content:"";position:absolute;top:-1px;right:-1px;border-style:solid;border-width:0 6px 6px 0;border-color:transparent var(--pen) transparent transparent}
+
+.exam-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;padding-block:6px 48px}
+.exam-grid.solo{grid-template-columns:minmax(0,840px);justify-content:center}
+@media (max-width:980px){.exam-grid{grid-template-columns:minmax(0,1fr)}}
+.exam-main{display:grid;gap:14px;min-width:0}
+.item-head{display:flex;justify-content:space-between;gap:12px;padding:11px 20px;border-bottom:1px solid var(--rule-2);font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.item-body{display:grid;grid-template-columns:58px minmax(0,1fr);gap:0 10px;padding:24px 26px 26px 12px}
+.item-num{font-family:var(--f-display);font-weight:700;font-size:30px;text-align:right;line-height:1.15;font-variant-numeric:tabular-nums}
+.item-main{min-width:0}
+@media (max-width:560px){
+  .item-body{grid-template-columns:minmax(0,1fr);padding:16px 16px 20px}
+  .item-num{text-align:left;font-size:24px;margin-bottom:4px}
+}
+.stem{font-family:var(--f-exam);font-size:19px;line-height:1.6}
+.w{cursor:pointer;border-radius:2px;padding:0 1px;margin:0 -1px;-webkit-tap-highlight-color:transparent}
+.w:hover{background:var(--rule-2)}
+.w.hl{background:linear-gradient(transparent 10%,var(--hl) 10%,var(--hl) 90%,transparent 90%);color:var(--hl-ink)}
+.hint{font-size:13px;color:var(--ink-3);margin-top:6px}
+.opts{display:grid;gap:8px;margin-top:18px}
+.opt{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;border:1px solid var(--rule-2);border-radius:var(--r);background:var(--sheet)}
+.opt:hover{border-color:var(--rule)}
+.opt.is-sel{border-color:var(--ink-2);background:var(--sheet-2)}
+.opt-pick{display:flex;align-items:flex-start;gap:13px;padding:12px 14px;cursor:pointer;min-width:0}
+.opt-pick input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.opt-pick .bubble{margin-top:2px}
+.opt-pick input:focus-visible + .bubble{outline:2px solid var(--blue);outline-offset:2px}
+.opt-text{font-family:var(--f-exam);font-size:17px;line-height:1.5;min-width:0}
+.opt.is-elim .opt-text{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:var(--ink-3);color:var(--ink-3)}
+.opt.is-elim .bubble{border-style:dashed;opacity:.6}
+.strike{margin-right:8px;min-height:34px;padding:0 10px;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--ink-3);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.strike:hover{color:var(--ink);border-color:var(--rule)}
+.strike[aria-pressed="true"]{color:var(--ink);border-color:var(--rule);background:var(--sheet-2)}
+.opts.tf{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:420px){.opts.tf{grid-template-columns:1fr}}
+.tools{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px dashed var(--rule)}
+.conf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tools-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:var(--ink-2)}
+.segbtns{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.segbtns button{border:0;border-right:1px solid var(--rule);background:var(--sheet);padding:0 13px;min-height:38px;font-size:14px;font-weight:600;cursor:pointer}
+.segbtns button:last-child{border-right:0}
+.segbtns button:hover{background:var(--sheet-2)}
+.segbtns button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.tools-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flagbtn[aria-pressed="true"]{color:var(--pen);border-color:var(--pen-line);background:var(--pen-soft)}
+.item-nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* essay */
+.essay-body{padding:22px 26px 26px;display:grid;gap:14px}
+@media (max-width:560px){.essay-body{padding:16px}}
+.essay-h{font-family:var(--f-exam);font-weight:700;font-size:21px}
+.essay-rule{font-size:15px;color:var(--ink-2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.tab{border:1px solid transparent;border-bottom:0;background:transparent;padding:9px 16px;font-weight:600;cursor:pointer;border-radius:4px 4px 0 0;margin-bottom:-1px;color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--sheet);border-color:var(--rule);color:var(--ink)}
+.tab:hover{color:var(--ink)}
+.prompt-panel{display:grid;gap:14px;padding-top:4px}
+.step-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12.5px;font-weight:700;color:var(--pen)}
+.field-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.prompt{font-family:var(--f-exam);font-size:19px;line-height:1.75}
+.tok{font:inherit;line-height:inherit;border:1.5px solid transparent;background:transparent;padding:0 3px;margin:0 -3px;border-radius:999px;cursor:pointer;color:inherit;display:inline}
+.tok:hover{background:var(--rule-2)}
+.tok.on{border-color:var(--pen);color:var(--pen)}
+.tok.found{border-color:var(--ok);color:var(--ok)}
+.tok.missed{border-color:var(--warn);border-style:dashed}
+.tok.extra{border-color:var(--ink-3);color:var(--ink-3)}
+.verbcheck{display:grid;gap:10px}
+.gloss{display:grid;gap:6px;margin:0}
+.gloss div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;font-size:14.5px}
+.gloss dt{font-weight:700}
+.gloss dd{margin:0;color:var(--ink-2)}
+.tasks{display:grid;gap:8px;padding:14px 16px;border:1px solid var(--pen-line);border-radius:4px;background:var(--pen-soft)}
+.tasks legend{float:left;width:100%;margin-bottom:6px}
+.tasks .check{font-size:15px}
+.field{display:grid;gap:6px}
+.wc{font-size:12.5px;color:var(--ink-3);justify-self:end;font-variant-numeric:tabular-nums}
+textarea.bluebook{background-color:var(--sheet);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.6em - 1px),var(--ruling) calc(1.6em - 1px),var(--ruling) 1.6em);background-attachment:local;background-position:0 12px;min-height:280px}
+
+/* review */
+.review{padding:26px 28px;display:grid;gap:16px}
+@media (max-width:560px){.review{padding:20px 16px}}
+.rv-list{list-style:none;margin:0;padding:0}
+.rv{display:grid;grid-template-columns:26px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-top:1px solid var(--rule-2)}
+.rv-mark{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;margin-top:1px}
+.rv.ok .rv-mark{background:var(--ok-soft);color:var(--ok)}
+.rv.warn .rv-mark{background:var(--warn-soft);color:var(--warn)}
+.rv-title{font-weight:700}
+.rv-body{font-size:14.5px;color:var(--ink-2);margin-top:2px}
+.rv .jump{margin-top:8px}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;padding:14px 16px;border:1px solid var(--blue-line);border-radius:var(--r);background:var(--blue-soft)}
+.confirm p{margin-right:auto;font-weight:600}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px);opacity:0;pointer-events:none;width:min(560px,calc(100vw - 32px));z-index:40;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast.coach{border-color:var(--pen-line);background:var(--pen-soft)}
+.toast.warn{border-color:var(--warn);background:var(--warn-soft)}
+.toast-body{flex:1;min-width:0;display:grid;gap:2px}
+.toast-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.09em;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.toast.coach .toast-label,.toast.coach .toast-msg{color:var(--pen)}
+.toast.warn .toast-label,.toast.warn .toast-msg{color:var(--warn)}
+.toast-msg{font-size:15px;line-height:1.45}
+.toast-x{border:0;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-2);padding:4px 6px;border-radius:4px}
+
+/* ---------- RESULTS ---------- */
+.res{padding-block:28px 72px;display:grid;gap:22px}
+.res-head{padding:24px 28px;display:grid;gap:16px}
+@media (max-width:560px){.res-head{padding:20px 16px}}
+.banner{padding:10px 14px;border-radius:4px;font-weight:600;font-size:14.5px}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.score-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 40px;align-items:end}
+@media (max-width:760px){.score-row{grid-template-columns:minmax(0,1fr)}}
+.score-main{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score-big{font-family:var(--f-display);font-weight:700;font-size:clamp(56px,10vw,92px);line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score-of{font-family:var(--f-display);font-size:22px;font-weight:600;color:var(--ink-2)}
+.part-scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 18px;margin:0}
+@media (max-width:640px){.part-scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.part-scores div{border-top:2px solid var(--ink);padding-top:8px;min-width:0}
+.part-scores dt{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:var(--ink-2)}
+.part-scores dd{margin:2px 0 0;font-family:var(--f-mono);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.part-scores dd.sub{font-family:var(--f-ui);font-size:13px;font-weight:400;color:var(--ink-2)}
+.res-acts{display:flex;flex-wrap:wrap;gap:10px}
+.res-sec{padding:24px 28px;display:grid;gap:14px}
+@media (max-width:560px){.res-sec{padding:20px 16px}}
+.tr-list{display:grid}
+.tr{display:grid;grid-template-columns:minmax(0,240px) 104px minmax(0,1fr);gap:6px 16px;padding:13px 0;border-top:1px solid var(--rule-2);align-items:baseline}
+.tr-name{display:flex;gap:10px;align-items:baseline;font-weight:700}
+.tr-name .tnum{font-size:16px;min-width:20px}
+.tr-obs{font-size:15px;color:var(--ink-2);line-height:1.5}
+@media (max-width:760px){.tr{grid-template-columns:minmax(0,1fr) auto}.tr-obs{grid-column:1/-1}}
+.two-sec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+@media (max-width:860px){.two-sec{grid-template-columns:minmax(0,1fr)}}
+.tchart{display:grid;gap:12px}
+.trow{display:grid;grid-template-columns:150px minmax(0,1fr) 112px;gap:12px;align-items:center;font-size:14px}
+@media (max-width:560px){.trow{grid-template-columns:96px minmax(0,1fr) 92px;font-size:13px}}
+.tbars{display:grid;gap:3px;min-width:0}
+.tbar{display:block;height:10px;border-radius:2px;background:var(--s1);min-width:2px}
+.tbar.plan{background:transparent;border:1.5px dashed var(--blue-line);height:10px}
+.tbar.over{background:var(--warn)}
+.tval{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px}
+.tkey{padding-left:162px}
+.k-act{background:var(--s1)}
+.k-over{background:var(--warn)}
+.k-plan{background:transparent;border:1.5px dashed var(--blue-line)}
+.calib{display:grid;gap:10px}
+.crow{display:grid;grid-template-columns:70px minmax(0,1fr) 92px;gap:12px;align-items:center;font-size:14px}
+.cbar{height:12px;border-radius:2px;background:var(--rule-2);overflow:hidden}
+.cbar span{display:block;height:100%;background:var(--s2)}
+.cval{text-align:right;font-family:var(--f-mono);font-size:13px}
+.chg{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.chg li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14.5px}
+.research-line{font-size:14px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:10px}
+.es-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px}
+@media (max-width:860px){.es-grid{grid-template-columns:minmax(0,1fr)}}
+.es-text,.es-rubric{display:grid;gap:10px;align-content:start}
+.es-prompt{font-family:var(--f-exam);font-size:16.5px;line-height:1.55}
+.es-box{border:1px solid var(--rule);border-radius:4px;padding:12px 14px;font-family:var(--f-exam);font-size:16px;line-height:1.6;max-height:360px;overflow:auto;display:grid;gap:8px;background:var(--sheet-2);overflow-wrap:anywhere}
+.rub{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:9px 0;border-top:1px solid var(--rule-2);font-size:14.5px}
+.rub b{font-size:14px}
+.es-total{font-size:16px}
+.es-total b{font-size:20px}
+.model{border:1px solid var(--rule);border-radius:4px}
+.model summary{cursor:pointer;padding:9px 12px;font-weight:600}
+.model ul{margin:0;padding:4px 14px 12px 32px;display:grid;gap:6px;font-size:14.5px}
+.ir-list{display:grid}
+.ir{display:grid;grid-template-columns:40px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-top:1px solid var(--rule-2)}
+.ir-num{font-family:var(--f-display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.ir-main{display:grid;gap:8px;min-width:0}
+.ir-stem{font-family:var(--f-exam);font-size:16.5px;line-height:1.5}
+.ir-opts{margin:0;padding-left:24px;display:grid;gap:2px;font-size:14.5px;color:var(--ink-2)}
+.ir-opts li.key{color:var(--ok);font-weight:600}
+.ir-opts li.mine:not(.key){color:var(--bad);text-decoration:line-through}
+.ir-meta{display:flex;gap:6px 12px;flex-wrap:wrap;align-items:baseline;font-size:14px}
+.ir details summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--blue)}
+.ir details p{font-size:14.5px;line-height:1.55;margin-top:6px}
+.part-h{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:700;color:var(--ink-2);padding-top:10px}
+.copybox{display:grid;gap:8px}
+.copybox textarea{font-family:var(--f-mono);font-size:12.5px;line-height:1.5;min-height:200px}
+
+/* ---------- LIBRARY ---------- */
+.lib{padding-block:32px 72px;display:grid;gap:28px}
+.lib-head{display:grid;gap:14px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;font-size:14px;color:var(--ink-2)}
+.legend div{display:grid;gap:4px;align-content:start}
+.legend .badge{justify-self:start}
+.tcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.tcards{grid-template-columns:minmax(0,1fr)}}
+.tcard{padding:20px 22px;display:grid;gap:10px;align-content:start;scroll-margin-top:96px}
+.tcard.flash{border-color:var(--pen)}
+.tcard-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tcard h3{font-family:var(--f-display);font-size:22px;font-weight:700;line-height:1.15}
+.tc-p{font-size:15px;line-height:1.55}
+.tc-label{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:var(--ink-2);margin-right:6px}
+.src{margin:0;padding-left:18px;display:grid;gap:5px;font-size:13.5px;color:var(--ink-2);line-height:1.45;overflow-wrap:anywhere}
+.lib-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.lib-two{grid-template-columns:minmax(0,1fr)}}
+.myths{padding:22px 24px;display:grid;gap:12px;align-content:start}
+.myth{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--rule-2)}
+.myth b{font-family:var(--f-exam);font-size:17px}
+.myth p{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.glossary{display:grid;gap:0;margin:0}
+.glossary div{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid var(--rule-2);font-size:14.5px}
+.glossary dt{font-weight:700}
+.glossary dd{margin:0;color:var(--ink-2)}
+
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}.tlist{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.mode-cards{grid-template-columns:minmax(0,1fr)}.setup{padding:18px 16px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div id="proctor" class="proctor" hidden></div>
+<main id="view"></main>
+<div id="pausecover" class="pausecover" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= helpers ================= */
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtLeft = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const wc = s => (String(s || '').trim().match(/\S+/g) || []).length;
+const toks = t => t.split(/\s+/).filter(Boolean);
+const norm = t => t.toLowerCase().replace(/[^a-z-]/g, '');
+const plural = (n, w, p) => (n === 1 ? w : (p || w + 's'));
+const num = x => (Number.isInteger(x) ? String(x) : String(Math.round(x * 100) / 100)).replace('-', '−');
+const dateStr = ms => { try { return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; } };
+
+const LS_CUR = 'tts.v1.current', LS_LAST = 'tts.v1.last', LS_HIST = 'tts.v1.history';
+function load(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function removeKey(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+const FLAG_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 1.5v13M3.5 2.5h8l-1.7 3 1.7 3h-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+const CHECK_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ALERT_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M8 3.5v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="12.6" r="1.2" fill="currentColor"/></svg>';
+
+/* ================= content ================= */
+const TOTAL = 40;
+const PARTS = {
+  p1: { key: 'p1', roman: 'I', name: 'Multiple choice', count: 10, each: 2, points: 20 },
+  p2: { key: 'p2', roman: 'II', name: 'True or false', count: 6, each: 1, points: 6 },
+  p3: { key: 'p3', roman: 'III', name: 'Short essay', count: 1, each: 14, points: 14 }
+};
+const PHASE_LABEL = { p1: 'Part I', p2: 'Part II', p3: 'Part III', review: 'Review' };
+
+const SRC = {
+  millman: { t: 'Millman, J., Bishop, C. H., & Ebel, R. (1965). An analysis of test-wiseness. Educational and Psychological Measurement, 25(3), 707–726.' },
+  liao: { t: 'Liao, R. J. T., & Lee, K. (2026). Investigating the effects of test-wiseness strategies on L2 learners’ reading test performance. Language Assessment Quarterly.', u: 'https://doi.org/10.1080/15434303.2025.2612165' },
+  hao: { t: 'Hao, Z., Baird, J.-A., El Masri, Y., & Double, K. (2025). The impact of test preparation on performance of large-scale educational tests: A meta-analysis of experimental studies. Review of Educational Research.', u: 'https://doi.org/10.3102/00346543251360775' },
+  anaya: { t: 'Anaya, L., Iriberri, N., Rey-Biel, P., & Zamarro, G. (2022). Understanding performance in test taking: The role of question difficulty order. Economics of Education Review, 90, 102293.', u: 'https://doi.org/10.1016/j.econedurev.2022.102293' },
+  sad: { t: 'Şad, S. N. (2020). Does difficulty-based item order matter in multiple-choice exams? Studies in Educational Evaluation, 64, 100812.', u: 'https://doi.org/10.1016/j.stueduc.2019.100812' },
+  oshige: { t: 'Oshige, M. (2009). Exploring task understanding in self-regulated learning: Task understanding as a predictor of academic success in undergraduate students [Master’s thesis, University of Victoria].', u: 'http://hdl.handle.net/1828/1690' },
+  miller: { t: 'Miller, M. F. (2009). Predicting university students’ performance of a complex task: Does task understanding moderate the influence of self-efficacy? [Master’s thesis, University of Victoria].', u: 'http://hdl.handle.net/1828/1748' },
+  itl: { t: 'Survey of Singapore university students’ interpretation of instructional verbs in exam questions (2002). ITL – International Journal of Applied Linguistics, 135–136.', u: 'https://www.jbe-platform.com/content/journals/10.1075/itl.135-136.03leo' },
+  kellogg: { t: 'Kellogg, R. T. (1988). Attentional overload and writing performance: Effects of rough draft and outline strategies. Journal of Experimental Psychology: Learning, Memory, and Cognition, 14(2), 355–365.', u: 'https://scholarsmine.mst.edu/psysci_facwork/284' },
+  chiav: { t: 'Chiavaroli, N. (2017). Negatively-worded multiple choice questions: An avoidable threat to validity. Practical Assessment, Research, and Evaluation, 22(3).', u: 'https://doi.org/10.7275/ca7y-mm27' },
+  rush: { t: 'Rush, B. R., Rankin, D. C., & White, B. J. (2016). The impact of item-writing flaws and item complexity on examination item difficulty and discrimination value. BMC Medical Education, 16, 250.', u: 'https://doi.org/10.1186/s12909-016-0773-3' },
+  couchman: { t: 'Couchman, J. J., Miller, N. E., Zmuda, S. J., Feather, K., & Schwartzmeyer, T. (2016). The instinct fallacy: The metacognition of answering and revising during college exams. Metacognition and Learning, 11(2), 171–185. (Plain-language summary by the lead author.)', u: 'https://theconversation.com/should-you-rely-on-first-instincts-when-answering-a-multiple-choice-exam-43313' },
+  kruger: { t: 'Kruger, J., Wirtz, D., & Miller, D. T. (2005). Counterfactual thinking and the first instinct fallacy. Journal of Personality and Social Psychology, 88(5), 725–735.', u: 'https://doi.org/10.1037/0022-3514.88.5.725' },
+  liu: { t: 'Liu, O. L., Bridgeman, B., Gu, L., Xu, J., & Kong, N. (2015). Investigation of response changes in the GRE revised General Test. Educational and Psychological Measurement, 75(6), 1002–1020.', u: 'https://doi.org/10.1177/0013164415573988' },
+  budescu: { t: 'Budescu, D., & Bar-Hillel, M. (1993). To guess or not to guess: A decision-theoretic view of formula scoring. Journal of Educational Measurement, 30(4), 277–291.', u: 'https://cris.huji.ac.il/en/publications/to-guess-or-not-to-guess-a-decisiontheoretic-view-of-formula-scor/' },
+  jamieson: { t: 'Jamieson, J. P., Mendes, W. B., Blackstock, E., & Schmader, T. (2010). Turning the knots in your stomach into bows: Reappraising arousal improves performance on the GRE. Journal of Experimental Social Psychology, 46(1), 208–212.', u: 'https://dash.harvard.edu/handle/1/4214916' },
+  brady: { t: 'Brady, S. T., Hard, B. M., & Gross, J. J. (2018). Reappraising test anxiety increases academic performance of first-year college students. Journal of Educational Psychology, 110(3), 395–406.', u: 'https://doi.org/10.1037/edu0000219' },
+  rozek: { t: 'Rozek, C. S., Ramirez, G., Fine, R. D., & Beilock, S. L. (2019). Reducing socioeconomic disparities in the STEM pipeline through student emotion regulation. PNAS, 116(5), 1553–1558.', u: 'https://doi.org/10.1073/pnas.1808589116' },
+  camerer: { t: 'Camerer, C. F., et al. (2018). Evaluating the replicability of social science experiments in Nature and Science between 2010 and 2015. Nature Human Behaviour, 2, 637–644.', u: 'https://www.nature.com/articles/s41562-018-0399-z' },
+  myers: { t: 'Myers, S. J., Davis, S. D., & Chan, J. C. K. (2021). Does expressive writing or an instructional intervention reduce the impacts of test anxiety in a college classroom? Cognitive Research: Principles and Implications, 6.', u: 'https://doi.org/10.1186/s41235-021-00309-x' },
+  thorm: { t: 'Thormodsæter, R. S., et al. (2026). Can we mitigate the impacts of test anxiety through reappraisal interventions? A replication study in science courses across multiple institution types in the United States. CBE—Life Sciences Education, 25(1), ar9.', u: 'https://doi.org/10.1187/cbe.25-04-0055' }
+};
+
+const TACTICS = [
+  { id: 'read', name: 'Read every direction first', strength: 'Moderate',
+    short: 'Find how many items to answer, how each part is scored, and any penalty.',
+    do: 'Before you answer anything, read the cover page and the directions for every part. Note how many questions you must answer, how each part is scored, and whether wrong answers cost points.',
+    research: 'Attending to directions is one of the error-avoidance strategies in the classic analysis of test-wiseness (Millman, Bishop & Ebel, 1965). In a 2026 study of 531 Taiwanese university students taking an English reading test, error-avoidance strategies were the only kind of test-wiseness strategy linked to higher scores (Liao & Lee, 2026).',
+    src: ['millman', 'liao'] },
+  { id: 'plan', name: 'Budget time by points', strength: 'Moderate',
+    short: 'Split your time in proportion to points and keep a few minutes for review.',
+    do: 'Survey the whole exam, then give each part a share of time that roughly matches its share of the points. Hold back a few minutes for review, and check the clock each time you finish a part.',
+    research: 'Planning and monitoring time is the first strategy group in Millman, Bishop and Ebel’s (1965) analysis. A 2025 meta-analysis of 28 experiments found that test preparation raised scores on large-scale tests (g = 0.26), and whether a program taught test-taking skills significantly affected the size of the gain (Hao et al., 2025). Few studies test time budgeting on its own.',
+    src: ['millman', 'hao'] },
+  { id: 'order', name: 'Answer what you know first', strength: 'Moderate',
+    short: 'Make a first pass, flag slow items, and come back to them.',
+    do: 'Work through each part answering the items you can. When an item will clearly take a while, flag it and move on. Return to flagged items with the time you have left.',
+    research: 'In a field experiment with about 19,000 test takers, putting easier questions first led to fewer abandoned tests and more correct answers than putting harder questions first (Anaya et al., 2022). Studies that reorder classroom exams are mixed; a study of 554 university students found no difference (Şad, 2020). A first pass lets you build an easy-first order yourself and keeps one hard item from using up the time for several easy ones.',
+    src: ['anaya', 'sad'] },
+  { id: 'verbs', name: 'Decode the directive verbs', strength: 'Moderate',
+    short: 'Circle each verb that tells you what to do, then list every task.',
+    do: 'Circle each directive verb in an essay prompt (compare, explain, evaluate) and turn the prompt into a checklist of every task it sets. Check your response against that list before you move on.',
+    research: 'In studies from Allyson Hadwin’s lab at the University of Victoria, how well undergraduates understood what a task required predicted how well they performed it (Oshige, 2009; Miller, 2009). A 2002 survey of university students in Singapore found widespread trouble interpreting the instructional verbs in exam questions. These studies are correlational.',
+    src: ['oshige', 'miller', 'itl'] },
+  { id: 'outline', name: 'Outline before you write', strength: 'Moderate',
+    short: 'List your points in order before drafting the essay.',
+    do: 'Spend a minute or two jotting your main points in the order you will use them, then write from the outline. If time runs out, a clear outline still shows what you know.',
+    research: 'In Kellogg’s (1988) experiments, college students who prepared an outline, written or only mental, wrote higher-quality documents than students who did not. Outlining freed their attention for turning ideas into sentences. These were writing tasks in a lab rather than timed exams.',
+    src: ['kellogg'] },
+  { id: 'elim', name: 'Rule out, then choose the best', strength: 'Logic',
+    short: 'Strike options you can disprove, read every option, pick the best one.',
+    do: 'Strike any option you can rule out with what you know. Read every remaining option, because an option can be true and still not be the best answer. Each option you remove raises the odds of a correct guess: from 1 in 4 to 1 in 2 after two strikes.',
+    research: 'Deductive elimination is part of the test-wiseness framework (Millman et al., 1965), and the gain in odds is simple arithmetic. One caution: in Liao and Lee’s (2026) study, heavy reliance on deductive shortcuts was linked to lower scores, so rule options out with course content rather than with how an option looks.',
+    src: ['millman', 'liao'] },
+  { id: 'neg', name: 'Slow down on NOT, EXCEPT and absolutes', strength: 'Moderate',
+    short: 'Restate negative questions; treat always and never as a warning sign.',
+    do: 'When a question says NOT or EXCEPT, restate it in your own words and mark each option true or false; the odd one out is your answer. Treat absolute words such as always and never as a warning sign, after you have used what you know.',
+    research: 'Negatively worded questions trip up even strong students, and highlighting the negative word does not prevent the error, because many students still answer as if the question were positive (Chiavaroli, 2017). Item-writing research lists absolute terms such as always and never as a flaw that tips off test-wise students, since such statements are usually false (Rush, Rankin & White, 2016). Careful exam writers avoid them, so don’t lean on this cue.',
+    src: ['chiav', 'rush'] },
+  { id: 'clues', name: 'Use clues from other items', strength: 'Limited',
+    short: 'A later item may define a term or state a fact you need.',
+    do: 'Keep your flagged items in mind as you read the rest of the exam. A later question can define a term or state a fact that settles an earlier one.',
+    research: 'Using information from other items is one of the cue-using strategies in Millman, Bishop and Ebel’s (1965) analysis of test-wiseness. Few studies have tested this strategy on its own.',
+    src: ['millman'] },
+  { id: 'conf', name: 'Rate your confidence as you go', strength: 'Moderate',
+    short: 'Mark Sure, Unsure or Guess so review time goes to the right items.',
+    do: 'Right after answering, mark how sure you are. In review, start with your Guess and Unsure items.',
+    research: 'In college classroom exams, confidence ratings that students recorded while answering predicted which answers were worth revising. Following those ratings, both revising and sticking produced more right answers than wrong ones. Confidence judged after the exam was a poor guide (Couchman et al., 2016).',
+    src: ['couchman'] },
+  { id: 'change', name: 'Change answers when you find a reason', strength: 'Strong',
+    short: 'Second thoughts with a reason behind them usually pay off.',
+    do: 'If review turns up a concrete reason to prefer a different option, change your answer. Don’t switch on a vague feeling alone.',
+    research: 'Nearly a century of studies finds that changed answers go from wrong to right more often than from right to wrong. On introductory psychology midterms from 1,561 students, 51% of changes went from wrong to right and 25% from right to wrong, yet most students believed changing was risky (Kruger, Wirtz & Miller, 2005). On the GRE, about 83% of test takers raised their quantitative score by changing answers, and fewer than 4% lowered it (Liu et al., 2015).',
+    src: ['kruger', 'liu'] },
+  { id: 'blank', name: 'Leave nothing blank', strength: 'Logic',
+    short: 'Check the penalty rule, then answer every item you can beat chance on.',
+    do: 'If wrong answers cost nothing, answer every item. If there is a penalty, compare it with your odds. On this exam’s true/false part, a blind guess earns +1 half the time and −½ half the time, which averages +¼ point.',
+    research: 'Decision analysis of penalty scoring shows that a blind guess is worth the same as a blank only when the penalty exactly cancels out chance, and that any partial knowledge makes answering the better bet (Budescu & Bar-Hillel, 1993). With no penalty, a blank can only cost points (Liu et al., 2015).',
+    src: ['budescu', 'liu'] },
+  { id: 'reset', name: 'Reframe nerves, write out worries', strength: 'Mixed',
+    short: 'Optional. Treat a racing heart as fuel; write worries down first.',
+    do: 'Before starting, remind yourself that a racing heart is your body getting ready to perform, or spend a few minutes writing about what worries you.',
+    research: 'Several studies found gains: telling test takers that arousal can help raised GRE math scores (Jamieson et al., 2010) and first-year college exam scores (Brady, Hard & Gross, 2018), and brief writing and reappraisal exercises cut course failure among lower-income ninth-grade biology students from 39% to 18% (Rozek et al., 2019). Other studies found nothing: a large replication of the original exam-worry writing study failed (Camerer et al., 2018), and trials in college courses found no change in anxiety or scores (Myers, Davis & Chan, 2021; Thormodsæter et al., 2026). The exercise is cheap to try, but the evidence is mixed.',
+    src: ['jamieson', 'brady', 'rozek', 'camerer', 'myers', 'thorm'] }
+];
+TACTICS.forEach((t, i) => { t.n = i + 1; });
+const TMAP = Object.fromEntries(TACTICS.map(t => [t.id, t]));
+
+const STRENGTH_DEF = [
+  ['Strong', 'Consistent results across many studies and settings.'],
+  ['Moderate', 'Supported by several studies, often correlational or outside timed exams.'],
+  ['Mixed', 'Some well-run studies found benefits and others found none.'],
+  ['Logic', 'Follows directly from how the test is scored.'],
+  ['Limited', 'Standard advice with few direct tests.']
+];
+
+const ITEMS = [
+  { id: 'q1', part: 'p1', num: 1, type: 'mc', tactic: 'conf',
+    stem: 'Which memory store holds a brief, detailed copy of what you just saw or heard, a copy that fades within seconds unless you pay attention to it?',
+    options: ['Sensory memory', 'Short-term memory', 'Long-term memory', 'Procedural memory'], key: 0,
+    explain: 'Sensory memory holds a large amount of raw input very briefly: visual images for a fraction of a second, sounds for a few seconds. Paying attention moves selected information into short-term memory.',
+    coach: 'Warm-up item. Read the whole stem before you look at the options, then rate your confidence. A quick “Sure” now tells you to skip this item during review.' },
+  { id: 'q2', part: 'p1', num: 2, type: 'mc', tactic: 'order',
+    stem: 'Dana earns a bonus for every 25 sales calls she completes. Marco keeps checking his phone for a reply from a friend who answers at unpredictable times. Priya plays a slot machine that pays off after an unpredictable number of pulls. Which option matches each person to the correct reinforcement schedule?',
+    options: ['Dana: fixed-ratio · Marco: variable-interval · Priya: variable-ratio', 'Dana: fixed-interval · Marco: variable-ratio · Priya: variable-interval', 'Dana: fixed-ratio · Marco: variable-ratio · Priya: variable-interval', 'Dana: variable-ratio · Marco: fixed-interval · Priya: fixed-ratio'], key: 0,
+    explain: 'Ratio schedules depend on the number of responses; interval schedules depend on time. Dana’s bonus follows a set number of calls (fixed-ratio). Marco’s checking pays off only after an unpredictable amount of time passes (variable-interval). Priya’s payoff follows an unpredictable number of pulls (variable-ratio).',
+    coach: 'Long, multi-part item. If it will take more than a couple of minutes, flag it and come back. Partial knowledge still helps: settle one person at a time and rule out every option that gets that person wrong.' },
+  { id: 'q3', part: 'p1', num: 3, type: 'mc', tactic: 'neg',
+    stem: 'Each of the following tends to improve long-term retention of course material EXCEPT:',
+    options: ['Spacing study sessions across several days', 'Testing yourself with practice questions', 'Connecting new ideas to examples from your own life', 'Cramming all of your studying into one long session the night before'], key: 3,
+    explain: 'Spacing, self-testing and connecting new ideas to what you already know all strengthen long-term retention. Cramming the same amount of study into one session can feel productive but leads to poorer long-term retention than spreading it out.',
+    coach: 'EXCEPT flips the task: you want the one option that does NOT improve retention. Restate the question in your own words, then mark each option true or false. Rule out every option that is true; the one left is your answer.' },
+  { id: 'q4', part: 'p1', num: 4, type: 'mc', tactic: 'neg',
+    stem: 'Which statement about eyewitness memory is best supported by research?',
+    options: ['Eyewitnesses who feel confident are always accurate.', 'Information a witness hears after an event can change what the witness later remembers.', 'Memory records events like a video camera, so details stay fixed once they are stored.', 'Leading questions never affect what a witness reports.'], key: 1,
+    explain: 'In misinformation studies such as Loftus and Palmer’s 1974 car-crash experiment, the wording of a question (“smashed” versus “hit”) changed witnesses’ speed estimates and their later reports of broken glass. Memory is reconstructed each time it is recalled. Options A and D use absolute words that the research contradicts.',
+    coach: 'Two options use absolute words, always and never. Few findings in psychology hold without exception, so absolute statements are often false. Use this as a tiebreaker after you have applied what you know.' },
+  { id: 'q5', part: 'p1', num: 5, type: 'mc', tactic: 'elim',
+    stem: 'Which description best captures the role of working memory?',
+    options: ['It stores information permanently for later use.', 'It holds information briefly.', 'It holds a small amount of information briefly while you actively use or change it.', 'It keeps a detailed copy of all incoming sensory information.'], key: 2,
+    explain: 'Option B is true but incomplete. Working memory is an active workspace: it holds a small amount of information and lets you work with it, as when you do mental arithmetic. Items that ask for the best answer often include a partly correct option.',
+    coach: 'This item asks for the best description. Read every option before choosing; an option can be true and still not be the best answer.' },
+  { id: 'q6', part: 'p1', num: 6, type: 'mc', tactic: 'clues',
+    stem: 'Sam studied Spanish in high school and started Italian this semester. Now, when Sam tries to speak Spanish, Italian words keep slipping in. Which process does this illustrate?',
+    options: ['Proactive interference', 'Retroactive interference', 'Encoding failure', 'Repression'], key: 1,
+    explain: 'Newer learning (Italian) is disrupting recall of older learning (Spanish), which is retroactive interference. Item 9 defines proactive interference as earlier learning disrupting newer information; retroactive interference is the reverse.',
+    coach: 'Pin down the time order: which language came first, and which one is being disrupted? If you can’t remember which term is which, flag the item. A later item may define one of them.' },
+  { id: 'q7', part: 'p1', num: 7, type: 'mc', tactic: 'elim',
+    stem: 'A toddler gets a painful vaccination from a nurse wearing green scrubs. A month later, the toddler starts crying whenever anyone in green scrubs walks into the room. In this example, what role do the green scrubs play?',
+    options: ['Unconditioned stimulus', 'Conditioned stimulus', 'Unconditioned response', 'Conditioned response'], key: 1,
+    explain: 'The scrubs started out neutral and now trigger crying because they were paired with the painful shot, which is the unconditioned stimulus. A once-neutral stimulus that comes to trigger a response is a conditioned stimulus. Crying is a response, so options C and D can go first.',
+    coach: 'Split the options with two questions. Are the scrubs a stimulus or a response? That rules out two options. Was the reaction to them learned or unlearned? That settles it.' },
+  { id: 'q8', part: 'p1', num: 8, type: 'mc', tactic: 'elim',
+    stem: 'According to levels-of-processing theory, which study question would lead to the deepest processing of the word WHALE?',
+    options: ['Is the word printed in capital letters?', 'Does the word rhyme with “tail”?', 'Would the word fit the sentence “The ___ swam beside the boat”?', 'How many letters does the word contain?'], key: 2,
+    explain: 'Questions about meaning produce deeper processing and better memory than questions about appearance (A and D) or sound (B), as Craik and Tulving showed in 1975.',
+    coach: 'Sort the options by what each question makes you think about: how the word looks, how it sounds or what it means. Then pick the level the theory ranks deepest.' },
+  { id: 'q9', part: 'p1', num: 9, type: 'mc', tactic: 'clues',
+    stem: 'Proactive interference occurs when earlier learning disrupts the recall of newer information. Which of the following is an example of proactive interference?',
+    options: ['After memorizing a new locker combination, you can no longer recall your old one.', 'After moving, you keep writing your old address on forms.', 'You forget a classmate’s name because you weren’t paying attention when you were introduced.', 'You remember the first and last items on a grocery list better than the middle items.'], key: 1,
+    explain: 'Your old address (earlier learning) intrudes when you try to recall the new one. Option A is retroactive interference (new learning disrupts old), C is a failure to encode, and D is the serial-position effect.',
+    coach: 'This stem defines a term. If an earlier item turned on the same idea, note its number and return to it during review.' },
+  { id: 'q10', part: 'p1', num: 10, type: 'mc', tactic: 'elim',
+    stem: 'Jordan takes a pain reliever when a headache starts. The headache goes away, and Jordan becomes more likely to reach for a pain reliever at the next headache. Which process explains the change in Jordan’s behavior?',
+    options: ['Positive reinforcement', 'Negative reinforcement', 'Positive punishment', 'Negative punishment'], key: 1,
+    explain: 'The behavior (taking a pain reliever) became more likely, so this is reinforcement, not punishment; that rules out C and D. Something unpleasant (the headache) was taken away, which makes it negative reinforcement.',
+    coach: 'Decode the terms before choosing. Reinforcement makes a behavior more likely; punishment makes it less likely. Negative means something is taken away, not that it is bad.' },
+  { id: 'q11', part: 'p2', num: 11, type: 'tf', tactic: 'neg', key: true,
+    stem: 'Spacing study sessions over several days usually produces better long-term retention than studying for the same total time in one session.',
+    explain: 'True. The spacing effect is one of the most reliable findings in memory research. Hedged words such as “usually” fit findings that hold in most cases.',
+    coach: 'Find the qualifier. “Usually” allows exceptions, which fits most research findings. Hedged statements are true more often than absolute ones.' },
+  { id: 'q12', part: 'p2', num: 12, type: 'tf', tactic: 'neg', key: false,
+    stem: 'All forgetting happens because memories fade with the passage of time.',
+    explain: 'False. Interference, failures to encode and failures to retrieve also cause forgetting. One counterexample is enough to make an “all” statement false.',
+    coach: '“All” is an absolute. Can you think of one exception? A single counterexample makes the statement false.' },
+  { id: 'q13', part: 'p2', num: 13, type: 'tf', tactic: 'read', key: true,
+    stem: 'In classical conditioning, the unconditioned stimulus triggers a response without any learning, and the conditioned stimulus starts out neutral.',
+    explain: 'True. Both claims are correct: the unconditioned stimulus triggers an unlearned response, and the conditioned stimulus begins as a neutral stimulus.',
+    coach: 'Two claims joined by “and.” Check each one separately; both must be true for you to mark True.' },
+  { id: 'q14', part: 'p2', num: 14, type: 'tf', tactic: 'elim', key: false,
+    stem: 'Negative reinforcement decreases a behavior by taking away something the person enjoys.',
+    explain: 'False. That describes negative punishment. Negative reinforcement increases a behavior by removing something unpleasant.',
+    coach: 'Decode each term: negative means something is removed, and reinforcement means the behavior becomes more likely. Does the statement match both?' },
+  { id: 'q15', part: 'p2', num: 15, type: 'tf', tactic: 'read', key: false,
+    stem: 'Short-term memory has a limited capacity, and information stays there permanently unless it is rehearsed.',
+    explain: 'False. The first claim is true, but without rehearsal information fades from short-term memory within about 20 seconds. One false part makes the statement false.',
+    coach: 'Two claims. The first is true. Is the second one true too?' },
+  { id: 'q16', part: 'p2', num: 16, type: 'tf', tactic: 'blank', key: true,
+    stem: 'Taking a practice test can strengthen memory for the material it covers.',
+    explain: 'True. This is the testing effect: retrieving information strengthens memory for it, which is why self-testing is an effective way to study.',
+    coach: 'Unsure? Remember the penalty math. A coin-flip guess wins 1 point half the time and loses ½ point half the time, so it averages +¼ point.' }
+];
+const IMAP = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const ORDER = ITEMS.map(i => i.id).concat(['essay']);
+const MC = ITEMS.filter(i => i.type === 'mc');
+const TF = ITEMS.filter(i => i.type === 'tf');
+
+const PROMPTS = {
+  A: {
+    text: 'Compare classical conditioning and operant conditioning. Then explain which type of learning better accounts for a student who studies harder after her instructor praises her improved quiz score. Support your answer with at least one key term from each type of conditioning.',
+    verbs: ['compare', 'explain', 'support'],
+    tasks: ['Compare: give at least one similarity between classical and operant conditioning.', 'Compare: give at least two differences.', 'Explain: say which type better accounts for the praised student, and why.', 'Support: use at least one accurate key term from each type.'],
+    rubric: [
+      { t: 'States at least one similarity (for example, both are forms of associative learning, or both show acquisition and extinction).', pts: 2 },
+      { t: 'States at least two accurate differences (for example, two stimuli paired versus a behavior paired with its consequence; automatic responses versus voluntary behavior).', pts: 4 },
+      { t: 'Identifies operant conditioning as the better account of the praised student.', pts: 2 },
+      { t: 'Explains why: praise is a consequence added after studying, and studying increases, which is positive reinforcement.', pts: 3 },
+      { t: 'Uses at least one accurate key term from each type of conditioning.', pts: 2 },
+      { t: 'Organizes the comparison clearly, point by point or side by side.', pts: 1 }
+    ],
+    model: ['Similarities: both are associative learning; both show acquisition, extinction and generalization.', 'Difference 1: classical conditioning pairs two stimuli; operant conditioning pairs a behavior with its consequence.', 'Difference 2: classical responses are automatic (salivating, flinching); operant behaviors are voluntary (studying, raising a hand).', 'Difference 3: in classical conditioning the stimulus comes before the response; in operant conditioning the consequence follows the behavior.', 'The student: operant conditioning. Praise is added after studying and studying increases, so praise is a positive reinforcer.', 'Key terms: conditioned stimulus, unconditioned response; positive reinforcement, reinforcer.']
+  },
+  B: {
+    text: 'Describe the three-stage model of memory: sensory, short-term and long-term memory. Then evaluate the model. Identify one strength and one limitation, and conclude whether the model is a useful description of how memory works.',
+    verbs: ['describe', 'evaluate', 'identify', 'conclude'],
+    tasks: ['Describe sensory memory.', 'Describe short-term memory.', 'Describe long-term memory and how information moves between the stages.', 'Evaluate: identify one strength of the model, with a reason.', 'Evaluate: identify one limitation, with a reason.', 'Conclude: say whether the model is useful, based on the strength and the limitation.'],
+    rubric: [
+      { t: 'Describes sensory memory: brief, large-capacity storage of raw input.', pts: 2 },
+      { t: 'Describes short-term memory: limited capacity, lasts seconds without rehearsal.', pts: 2 },
+      { t: 'Describes long-term memory: large capacity, relatively lasting.', pts: 2 },
+      { t: 'Explains how information moves between stages (attention, rehearsal or encoding, retrieval).', pts: 2 },
+      { t: 'Identifies a strength and gives a reason or evidence.', pts: 2 },
+      { t: 'Identifies a limitation and gives a reason or evidence.', pts: 2 },
+      { t: 'Concludes with a judgment that follows from the strength and the limitation.', pts: 2 }
+    ],
+    model: ['Sensory memory: large capacity, lasts a fraction of a second to a few seconds; attention selects what moves on.', 'Short-term memory: holds about 4 to 7 items for roughly 20 seconds without rehearsal.', 'Long-term memory: very large and relatively lasting; encoding moves information in, retrieval brings it back.', 'Strength: explains why the stores differ in capacity and duration, and fits the serial-position effect (early items from long-term memory, recent items from short-term memory).', 'Limitation: treats short-term memory as a passive box, while working-memory research shows an active workspace with separate parts; some information also reaches long-term memory without rehearsal.', 'Judgment: a useful simplified map of memory, but incomplete as an account of how memory works.']
+  }
+};
+Object.values(PROMPTS).forEach(P => { P.verbIdx = toks(P.text).map((t, k) => [norm(t), k]).filter(([w]) => P.verbs.includes(w)).map(([, k]) => k); });
+
+const VERB_GLOSS = {
+  compare: 'Show how two things are alike and how they differ. Even on its own, “compare” usually expects both.',
+  explain: 'Give reasons or causes: show how or why something happens.',
+  support: 'Back up a claim with evidence, examples or key terms.',
+  describe: 'Give the main features or characteristics, accurately and in order.',
+  evaluate: 'Judge value or effectiveness using criteria and evidence, then state a conclusion.',
+  identify: 'Name or point out something specific.',
+  conclude: 'State the judgment your answer leads to.'
+};
+const GLOSSARY = [
+  ['Analyze', 'Break a topic into parts and show how the parts relate.'],
+  ['Compare', 'Show similarities and differences.'],
+  ['Contrast', 'Show differences.'],
+  ['Define', 'Give a precise meaning, often with an example.'],
+  ['Describe', 'Give the main features or characteristics.'],
+  ['Discuss', 'Examine several sides with evidence, then reach a view.'],
+  ['Evaluate', 'Judge value or effectiveness using criteria and evidence; state a conclusion.'],
+  ['Explain', 'Give reasons or causes; show how or why.'],
+  ['Identify', 'Name or point out something specific.'],
+  ['Illustrate', 'Make a point clear with examples.'],
+  ['Justify', 'Give reasons that support a position or decision.'],
+  ['Summarize', 'State the main points briefly, without detail.'],
+  ['Support', 'Back a claim with evidence, examples or key terms.'],
+  ['Trace', 'Describe a development step by step, in order.']
+];
+
+const INSTR = [
+  { id: 'i1', q: 'How many Part III essay prompts should you answer?', opts: ['Both prompts', 'One prompt', 'At least one prompt', 'As many as time allows'], key: 1, line: 'l-p3a',
+    fb: 'The Part III directions say to respond to ONE prompt, and only the first one you start will be graded.' },
+  { id: 'i2', q: 'A Part II statement makes two claims. One is true and one is false. How should you mark it?', opts: ['True', 'False', 'Leave it blank', 'Either one; partial credit is given'], key: 1, line: 'l-p2a',
+    fb: 'Mark True only if every part is true. One false claim makes the whole statement false.' },
+  { id: 'i3', q: 'You have no idea about a Part II statement. Which move earns more on average?', opts: ['Leave it blank, because the ½-point penalty makes guessing a losing bet', 'Guess, because a coin-flip guess averages +¼ point'], key: 1, line: 'l-p2b',
+    fb: 'Half the time you gain 1 point and half the time you lose ½. On average that is +¼ point, which beats the 0 for a blank.' },
+  { id: 'i4', q: 'Based on points alone, which part deserves the largest share of your time?', opts: ['Part I (20 points)', 'Part II (6 points)', 'Part III (14 points)', 'All three equally'], key: 0, line: 'l-p1pts',
+    fb: 'Part I carries half of the 40 points, so it gets about half of your working time.' }
+];
+
+const ROUTINE = {
+  p1: 'Read the stem and mark key words. Rule out what you can, read every option left, choose, then rate your confidence. Flag anything slow and keep moving.',
+  p2: 'Find the qualifier (all, never, usually, some) and check every claim; one false part makes the statement false. Unsure? A coin-flip guess still averages +¼ point.',
+  p3: 'Decode the prompt, list every task, outline, write, then check your response against the task list. Answer one prompt only.'
+};
+const STATUS_L = { used: 'Used', partial: 'Partly', missed: 'Not used', na: 'Not needed' };
+const CONF_L = { sure: 'Sure', unsure: 'Unsure', guess: 'Guess' };
+
+/* ================= state ================= */
+const S = {
+  view: 'home',
+  setup: { mode: 'coached', limit: 40, reset: true, touchedLimit: false, touchedReset: false },
+  A: null, saved: null, last: null,
+  libFrom: null,
+  ui: { confirmHand: false, confirmDiscard: false, worry: '', copyFallback: false }
+};
+
+function newItemState(i) {
+  return { ans: null, first: null, firstSet: false, committed: null, ansAt: null, changes: [], elim: i.type === 'mc' ? [false, false, false, false] : [],
+    elimUsed: false, struckKey: false, hl: [], conf: null, flag: false, visits: 0, firstVisitAt: null, firstLeftBlank: false, maxStop: 0, totalStop: 0 };
+}
+function newPromptState() { return { sel: [], checked: false, outline: '', answer: '', outlineAt: null, answerAt: null, tasks: [] }; }
+function newAttempt(st) {
+  const items = {};
+  ITEMS.forEach(i => { items[i.id] = newItemState(i); });
+  return {
+    v: 1, id: 'a' + Date.now().toString(36), mode: st.mode, limit: st.limit, created: Date.now(),
+    stage: st.reset ? 'reset' : 'cover', lastView: st.reset ? 'reset' : 'cover',
+    elapsed: 0, running: false, paused: false,
+    phase: { cover: 0, plan: 0, p1: 0, p2: 0, p3: 0, review: 0 },
+    reset: { reframed: false, wrote: false, skipped: false },
+    instr: { pick: {}, first: {} },
+    plan: null, planBasis: null, planDraft: null, planSkipped: false,
+    items, essay: { tab: 'A', startedFirst: null, warnedBoth: false, A: newPromptState(), B: newPromptState(), firstVisitAt: null, maxStop: 0 },
+    cur: 'q1', inItem: false, enterAt: 0, reviewStarted: false,
+    warned5: false, partWarned: { p1: false, p2: false, p3: false, review: false },
+    submitted: false, timeUp: false, endElapsed: null, finishedAt: null,
+    rubric: { A: [], B: [] }, essayScored: false
+  };
+}
+
+/* ================= persistence ================= */
+let lastSave = 0, saveTimer = null;
+function persist() {
+  const A = S.A;
+  if (!A || A.submitted) return;
+  A.lastView = S.view === 'library' ? (S.libFrom || A.lastView) : S.view;
+  save(LS_CUR, A);
+}
+function persistSoon() {
+  const now = Date.now();
+  clearTimeout(saveTimer);
+  if (now - lastSave > 2000) { lastSave = now; persist(); }
+  else saveTimer = setTimeout(() => { lastSave = Date.now(); persist(); }, 2100);
+}
+
+/* ================= clock ================= */
+let timer = null, lastNow = 0;
+function phaseKey() {
+  const A = S.A;
+  if (!A || A.submitted) return null;
+  if (A.reviewStarted && ['exam', 'review', 'cover'].includes(S.view)) return 'review';
+  if (S.view === 'cover') return 'cover';
+  if (S.view === 'plan') return 'plan';
+  if (S.view === 'review') return 'review';
+  if (S.view === 'exam') return A.cur === 'essay' ? 'p3' : IMAP[A.cur].part;
+  return null;
+}
+function accumulate() {
+  const A = S.A;
+  if (!A || !A.running) return;
+  const now = performance.now();
+  let d = now - lastNow;
+  lastNow = now;
+  if (!(d > 0)) d = 0;
+  A.elapsed += d;
+  const k = phaseKey();
+  if (k) A.phase[k] += d;
+}
+function startClock() {
+  const A = S.A;
+  if (!A || A.running || A.submitted) return;
+  A.running = true;
+  lastNow = performance.now();
+  clearInterval(timer);
+  timer = setInterval(tick, 250);
+}
+function stopClock() {
+  accumulate();
+  if (S.A) S.A.running = false;
+  clearInterval(timer);
+  timer = null;
+}
+function tick() {
+  const A = S.A;
+  if (!A || !A.running) return;
+  accumulate();
+  if (A.elapsed >= A.limit * 60000) { A.elapsed = A.limit * 60000; timeUp(); return; }
+  updateProctor();
+  checkAlerts();
+  persistSoon();
+}
+function checkAlerts() {
+  const A = S.A;
+  const left = A.limit * 60000 - A.elapsed;
+  if (!A.warned5 && left <= 300000 && A.limit > 5) {
+    A.warned5 = true;
+    toast('Five minutes left. Make sure every item has an answer.', 'warn');
+  }
+  if (A.mode === 'coached' && A.plan) {
+    const k = phaseKey();
+    if (k && A.plan[k] != null && A.plan[k] > 0 && !A.partWarned[k] && A.phase[k] > A.plan[k] * 60000) {
+      A.partWarned[k] = true;
+      const name = k === 'review' ? 'review' : PHASE_LABEL[k];
+      toast(`You have used the ${A.plan[k]} ${plural(A.plan[k], 'minute')} your plan gave ${name}. ${k === 'review' ? 'Hand in when you are ready.' : 'Flag what is left and move on; you can come back.'}`, 'coach');
+    }
+  }
+}
+function timeUp() {
+  const A = S.A;
+  if (!A || A.submitted) return;
+  A.timeUp = true;
+  finalize();
+  S.view = 'results';
+  render();
+  scrollTop();
+}
+
+/* ================= navigation ================= */
+function enterItem(id) {
+  const A = S.A;
+  A.cur = id; A.inItem = true; A.enterAt = A.elapsed;
+  if (id === 'essay') { if (A.essay.firstVisitAt == null) A.essay.firstVisitAt = A.elapsed; return; }
+  const s = A.items[id];
+  s.visits++;
+  if (s.firstVisitAt == null) s.firstVisitAt = A.elapsed;
+}
+function leaveItem() {
+  const A = S.A;
+  if (!A || !A.inItem) return;
+  A.inItem = false;
+  const id = A.cur, stop = A.elapsed - A.enterAt;
+  if (id === 'essay') { A.essay.maxStop = Math.max(A.essay.maxStop, stop); return; }
+  const s = A.items[id];
+  s.maxStop = Math.max(s.maxStop, stop);
+  s.totalStop += stop;
+  if (s.ans != null) {
+    if (!s.firstSet) { s.firstSet = true; s.first = s.ans; s.committed = s.ans; }
+    else if (s.ans !== s.committed) { s.changes.push({ from: s.committed, to: s.ans, at: A.elapsed }); s.committed = s.ans; }
+  } else {
+    if (!s.firstSet && s.visits === 1) s.firstLeftBlank = true;
+    if (s.firstSet && s.committed != null) { s.changes.push({ from: s.committed, to: null, at: A.elapsed }); s.committed = null; }
+  }
+}
+function go(id) {
+  const A = S.A;
+  if (!A || A.submitted) return;
+  if (S.view === 'exam') { if (A.cur === id && A.inItem) return; leaveItem(); }
+  S.view = 'exam';
+  A.stage = 'exam';
+  enterItem(id);
+  render();
+  scrollTop();
+  persistSoon();
+}
+function stepItem(d) {
+  const i = ORDER.indexOf(S.A.cur), j = i + d;
+  if (j < 0) return;
+  if (j >= ORDER.length) { openReview(); return; }
+  go(ORDER[j]);
+}
+function openReview() {
+  const A = S.A;
+  if (S.view === 'exam') leaveItem();
+  A.reviewStarted = true;
+  A.stage = 'review';
+  S.view = 'review';
+  S.ui.confirmHand = false;
+  render(); scrollTop(); persistSoon();
+}
+function openDirections() {
+  if (S.view === 'exam') leaveItem();
+  S.view = 'cover';
+  render(); scrollTop(); persistSoon();
+}
+function startSession() {
+  S.A = newAttempt(S.setup);
+  S.saved = null;
+  removeKey(LS_CUR);
+  if (S.setup.reset) { S.view = 'reset'; persist(); render(); scrollTop(); }
+  else openCover();
+}
+function openCover() {
+  const A = S.A;
+  stopWorryTimer();
+  A.stage = 'cover';
+  S.view = 'cover';
+  startClock();
+  persist(); render(); scrollTop();
+}
+function toPlan() {
+  const A = S.A;
+  if (A.planBasis == null) A.planBasis = Math.max(1, Math.floor((A.limit * 60000 - A.elapsed) / 60000));
+  if (!A.planDraft) A.planDraft = { p1: '', p2: '', p3: '', review: '' };
+  A.stage = 'plan';
+  S.view = 'plan';
+  persist(); render(); scrollTop();
+}
+function suggestPlan(basis) {
+  const review = Math.max(1, Math.round(basis * 0.1));
+  const rest = Math.max(3, basis - review);
+  const p1 = Math.max(1, Math.round(rest * 20 / 40)), p2 = Math.max(1, Math.round(rest * 6 / 40));
+  return { p1, p2, p3: Math.max(1, rest - p1 - p2), review };
+}
+function planCalc() {
+  const A = S.A, d = A.planDraft || {};
+  const v = k => { const n = Math.floor(Number(d[k])); return Number.isFinite(n) && n > 0 ? n : 0; };
+  const p = { p1: v('p1'), p2: v('p2'), p3: v('p3'), review: v('review') };
+  return { p, sum: p.p1 + p.p2 + p.p3 + p.review, basis: A.planBasis };
+}
+function planValid(c) { return c.sum > 0 && c.sum <= c.basis && c.p.p1 > 0 && c.p.p2 > 0 && c.p.p3 > 0; }
+function beginAnswering(skip) {
+  const A = S.A;
+  if (skip) { A.planSkipped = true; A.plan = null; }
+  else { const c = planCalc(); if (!planValid(c)) return; A.plan = c.p; }
+  go(A.cur || 'q1');
+}
+function finalize() {
+  const A = S.A;
+  if (!A || A.submitted) return;
+  if (S.view === 'exam') leaveItem();
+  stopClock();
+  A.submitted = true;
+  A.stage = 'done';
+  A.paused = false;
+  A.endElapsed = Math.min(A.elapsed, A.limit * 60000);
+  A.finishedAt = Date.now();
+  const R = analyze(A);
+  const hist = load(LS_HIST, []);
+  hist.push({ id: A.id, at: A.finishedAt, mode: A.mode, limit: A.limit, used: A.endElapsed, p1: R.p1, p2: R.p2, p3: R.p3Scored ? R.p3 : null, total: R.total });
+  save(LS_HIST, hist.slice(-30));
+  save(LS_LAST, A);
+  removeKey(LS_CUR);
+  S.last = A;
+  S.ui.confirmHand = false;
+  S.ui.copyFallback = false;
+}
+function afterScore() {
+  const A = S.A, R = analyze(A);
+  const hist = load(LS_HIST, []);
+  const h = hist.find(x => x.id === A.id);
+  if (h) { h.p3 = R.p3Scored ? R.p3 : null; h.total = R.total; save(LS_HIST, hist); }
+  save(LS_LAST, A);
+  render();
+}
+function pause() {
+  const A = S.A;
+  if (!A || A.mode !== 'coached' || A.paused) return;
+  stopClock(); A.paused = true; persist(); render();
+}
+function resume() {
+  const A = S.A;
+  if (!A) return;
+  A.paused = false; startClock(); persist(); render();
+}
+function resumeSaved() {
+  const A = S.saved;
+  if (!A) return;
+  S.saved = null; S.A = A;
+  A.running = false; A.inItem = false;
+  const v = A.lastView || 'cover';
+  if (v === 'exam') { S.view = 'exam'; enterItem(A.cur || 'q1'); }
+  else S.view = ['reset', 'cover', 'plan', 'review'].includes(v) ? v : 'exam';
+  if (S.view === 'exam' && !A.inItem) enterItem(A.cur || 'q1');
+  if (S.view !== 'reset' && !A.paused) startClock();
+  render(); scrollTop();
+}
+
+/* library routing */
+let suppressHash = false;
+function openLibrary(tid) {
+  if (S.view !== 'library') {
+    S.libFrom = S.view;
+    if (S.view === 'exam') leaveItem();
+  }
+  S.view = 'library';
+  if (location.hash !== '#library') { suppressHash = true; location.hash = 'library'; }
+  render();
+  const el = tid ? document.getElementById('t-' + tid) : null;
+  if (el) { el.classList.add('flash'); el.scrollIntoView({ block: 'start' }); } else scrollTop();
+}
+function closeLibrary() {
+  const back = S.libFrom || 'home';
+  S.libFrom = null;
+  if (location.hash === '#library') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { suppressHash = true; location.hash = ''; } }
+  const A = S.A;
+  if (back === 'exam' && A && !A.submitted) { S.view = 'exam'; enterItem(A.cur); }
+  else if (['cover', 'plan', 'review', 'reset', 'results', 'home'].includes(back)) S.view = (back === 'results' && !(A && A.submitted)) ? 'home' : back;
+  else S.view = 'home';
+  render(); scrollTop();
+}
+window.addEventListener('hashchange', () => {
+  if (suppressHash) { suppressHash = false; return; }
+  if (location.hash === '#library') { if (S.view !== 'library') openLibrary(); }
+  else if (S.view === 'library') closeLibrary();
+});
+
+function scrollTop() { try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); } }
+
+/* ================= toast ================= */
+let toastTimer = null;
+function toast(msg, kind) {
+  const el = $('#toast');
+  const label = kind === 'coach' ? 'Margin note' : kind === 'warn' ? 'Proctor' : 'Note';
+  el.className = 'toast show ' + (kind || '');
+  el.innerHTML = `<div class="toast-body"><span class="toast-label">${label}</span><p class="toast-msg">${esc(msg)}</p></div><button type="button" class="toast-x" data-act="toastx">Dismiss</button>`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 9000);
+}
+function hideToast() { const el = $('#toast'); el.className = 'toast'; }
+
+/* ================= analysis ================= */
+function itemPoints(i, a) {
+  if (a == null) return 0;
+  if (i.type === 'mc') return a === i.key ? 2 : 0;
+  return a === i.key ? 1 : -0.5;
+}
+function hasText(ps) { return wc(ps.answer) + wc(ps.outline) > 0; }
+function gradedPrompt(A) {
+  const e = A.essay, f = e.startedFirst;
+  if (!f) return null;
+  const o = f === 'A' ? 'B' : 'A';
+  if (hasText(e[f])) return f;
+  if (hasText(e[o])) return o;
+  return null;
+}
+function ansLabel(i, a) { if (a == null) return 'Blank'; return i.type === 'mc' ? 'ABCD'[a] : (a ? 'True' : 'False'); }
+function analyze(A) {
+  const R = {}, st = id => A.items[id];
+  R.p1 = 0; R.p1c = 0; R.p1b = 0;
+  MC.forEach(i => { const a = st(i.id).ans; if (a == null) R.p1b++; else if (a === i.key) { R.p1 += 2; R.p1c++; } });
+  R.p2 = 0; R.p2c = 0; R.p2w = 0; R.p2b = 0;
+  TF.forEach(i => { const a = st(i.id).ans; if (a == null) R.p2b++; else if (a === i.key) { R.p2 += 1; R.p2c++; } else { R.p2 -= 0.5; R.p2w++; } });
+  const e = A.essay;
+  R.graded = gradedPrompt(A);
+  R.bothWritten = hasText(e.A) && hasText(e.B);
+  const marks = R.graded ? (A.rubric[R.graded] || []) : [];
+  R.p3 = R.graded ? PROMPTS[R.graded].rubric.reduce((t, r, k) => t + (marks[k] ? r.pts : 0), 0) : 0;
+  R.p3Scored = !R.graded || !!A.essayScored;
+  R.auto = R.p1 + R.p2;
+  R.total = R.auto + (R.p3Scored ? R.p3 : 0);
+  R.changes = []; R.wr = 0; R.rw = 0; R.ww = 0; R.net = 0; R.cleared = 0;
+  ITEMS.forEach(i => {
+    const s = st(i.id);
+    if (!s.firstSet) return;
+    if (s.ans == null) { if (s.first != null) R.cleared++; return; }
+    if (s.ans === s.first) return;
+    const fr = s.first === i.key, to = s.ans === i.key;
+    let kind = 'ww';
+    if (!fr && to) { R.wr++; kind = 'wr'; } else if (fr && !to) { R.rw++; kind = 'rw'; } else R.ww++;
+    const d = itemPoints(i, s.ans) - itemPoints(i, s.first);
+    R.net += d;
+    R.changes.push({ i, from: s.first, to: s.ans, kind, d });
+  });
+  R.conf = { sure: [0, 0], unsure: [0, 0], guess: [0, 0] }; R.answered = 0; R.rated = 0;
+  ITEMS.forEach(i => { const s = st(i.id); if (s.ans == null) return; R.answered++; if (s.conf) { R.rated++; R.conf[s.conf][0]++; if (s.ans === i.key) R.conf[s.conf][1]++; } });
+  R.elimItems = MC.filter(i => st(i.id).elimUsed);
+  const ans = MC.filter(i => st(i.id).ans != null);
+  R.elimN = ans.filter(i => st(i.id).elimUsed).length;
+  R.elimRight = ans.filter(i => st(i.id).elimUsed && st(i.id).ans === i.key).length;
+  R.noElimN = ans.filter(i => !st(i.id).elimUsed).length;
+  R.noElimRight = ans.filter(i => !st(i.id).elimUsed && st(i.id).ans === i.key).length;
+  R.struckKey = MC.filter(i => st(i.id).struckKey);
+  R.returned = ITEMS.filter(i => st(i.id).firstLeftBlank && st(i.id).ans != null);
+  let lng = { i: null, ms: 0 };
+  ITEMS.forEach(i => { const m = st(i.id).maxStop; if (m > lng.ms) lng = { i, ms: m }; });
+  R.longest = lng;
+  R.blankEV = R.p1b * 0.5 + R.p2b * 0.25;
+  return R;
+}
+function evalTactics(A, R) {
+  const out = [];
+  const add = (id, status, text, label) => out.push({ t: TMAP[id], status, text, label: label || STATUS_L[status] });
+  const coached = A.mode === 'coached';
+  { // 1 read
+    let s = 'used'; const p = [];
+    if (coached) {
+      const f = INSTR.filter(q => A.instr.first[q.id] === true).length;
+      p.push(`Instruction check: ${f} of ${INSTR.length} right on the first try.`);
+      if (f < 3) s = 'partial';
+    } else {
+      p.push(`You spent ${fmtDur(A.phase.cover)} on the directions page.`);
+      if (A.phase.cover < 20000) { s = 'partial'; p.push('A careful read usually takes about a minute.'); }
+    }
+    if (R.bothWritten) { s = 'partial'; p.push(`You wrote on both essay prompts, but only Prompt ${R.graded} counted.`); }
+    else if (R.graded) p.push('You answered one essay prompt, as directed.');
+    if (R.p2b > 0) { s = 'partial'; p.push(`You left ${R.p2b} true/false ${plural(R.p2b, 'item')} blank, although a guess averages +¼ point under these directions.`); }
+    add('read', s, p.join(' '));
+  }
+  { // 2 plan
+    if (!A.plan) add('plan', 'missed', 'You skipped the time plan. Thirty seconds of planning sets a checkpoint for each part.');
+    else {
+      const pl = A.plan;
+      const over = ['p1', 'p2', 'p3'].filter(k => A.phase[k] > pl[k] * 60000 * 1.25 + 60000);
+      let s = 'used', t = `Plan: Part I ${pl.p1}, Part II ${pl.p2}, Part III ${pl.p3}, review ${pl.review} min.`;
+      if (over.length) { s = 'partial'; t += ` You ran well over on ${over.map(k => PHASE_LABEL[k]).join(' and ')}.`; }
+      else t += ' Each part stayed near or under its plan.';
+      if (pl.review === 0) { s = 'partial'; t += ' No review time was planned.'; }
+      if (A.timeUp) { s = 'partial'; t += ' Time ran out before you handed in.'; }
+      add('plan', s, t);
+    }
+  }
+  { // 3 order
+    const L = R.longest, n = R.returned.length;
+    const unseen = ITEMS.filter(i => A.items[i.id].visits === 0).length + (A.essay.firstVisitAt == null ? 1 : 0);
+    if (L.i && L.ms > 150000) add('order', n ? 'partial' : 'missed', `Your longest single stop was ${fmtDur(L.ms)} on item ${L.i.num}. ${n ? `You did skip and return to ${n} ${plural(n, 'item')}.` : 'Flagging it after a minute or two would have freed time for easier items.'}`);
+    else if (unseen) add('order', 'partial', `You never reached ${unseen} ${plural(unseen, 'item')}${A.essay.firstVisitAt == null ? ', including the essay' : ''}. A quick first pass through every part shows where the easy points are before time runs short.`);
+    else if (n) add('order', 'used', `You skipped ${n} ${plural(n, 'item')} on your first pass and came back to answer ${n === 1 ? 'it' : 'them'}.`);
+    else add('order', 'used', `No item held you for more than ${fmtDur(Math.max(L.ms, 1000))}, so nothing needed skipping.`);
+  }
+  { // 4 verbs
+    if (!R.graded) add('verbs', 'missed', 'No essay response, so no prompt was decoded.');
+    else {
+      const P = PROMPTS[R.graded], ps = A.essay[R.graded], tk = toks(P.text), sel = new Set(ps.sel);
+      const found = P.verbIdx.filter(k => sel.has(k)), miss = P.verbIdx.filter(k => !sel.has(k));
+      const nm = k => { const w = tk[k].replace(/[^A-Za-z-]/g, ''); return w.charAt(0).toUpperCase() + w.slice(1); };
+      const s = found.length === P.verbIdx.length ? 'used' : found.length ? 'partial' : 'missed';
+      add('verbs', s, `Prompt ${R.graded}: you circled ${found.length} of ${P.verbIdx.length} directive verbs.${miss.length ? ` Not circled: ${miss.map(nm).join(', ')}.` : ''}`);
+    }
+  }
+  { // 5 outline
+    if (!R.graded) add('outline', 'missed', 'No essay response.');
+    else {
+      const ps = A.essay[R.graded], ow = wc(ps.outline);
+      const before = ps.outlineAt != null && (ps.answerAt == null || ps.outlineAt <= ps.answerAt);
+      if (ow >= 8 && before) add('outline', 'used', `Outline: ${ow} words, started before your response.`);
+      else if (ow > 0) add('outline', 'partial', `Outline: ${ow} ${plural(ow, 'word')}${before ? '' : ', started after your response'}.`);
+      else add('outline', 'missed', 'No outline. Even five lines in order make the response easier to write.');
+    }
+  }
+  { // 6 elim
+    const n = R.elimItems.length;
+    let t = `You ruled out options on ${n} of 10 multiple-choice items.`;
+    if (R.elimN && R.noElimN) t += ` ${R.elimRight} of ${R.elimN} right when you ruled options out; ${R.noElimRight} of ${R.noElimN} without.`;
+    if (R.struckKey.length) t += ` On ${plural(R.struckKey.length, 'item')} ${R.struckKey.map(i => i.num).join(', ')} you ruled out the correct answer at some point, so strike only what you can disprove.`;
+    add('elim', n >= 3 ? 'used' : n ? 'partial' : 'missed', t);
+  }
+  { // 7 neg
+    const q3 = A.items.q3, ok3 = q3.ans === IMAP.q3.key;
+    const tk3 = toks(IMAP.q3.stem);
+    const hlExcept = q3.hl.some(k => norm(tk3[k] || '') === 'except');
+    const okTF = ['q12', 'q13', 'q15'].filter(id => A.items[id].ans === IMAP[id].key).length;
+    const score = (ok3 ? 1 : 0) + okTF;
+    add('neg', score === 4 ? 'used' : score >= 2 ? 'partial' : 'missed', `Item 3 (EXCEPT): ${ok3 ? 'right' : 'missed'}${hlExcept ? ', and you marked EXCEPT' : ''}. True/false items with an absolute word or a two-part claim: ${okTF} of 3 right.`);
+  }
+  { // 8 clues
+    const q6 = A.items.q6, q9 = A.items.q9, ok = q6.ans === IMAP.q6.key;
+    const after = q9.firstVisitAt != null && q6.ansAt != null && q6.ansAt > q9.firstVisitAt;
+    if (ok) add('clues', 'used', `Item 6 right.${after ? ' You answered it after reading item 9, which defines proactive interference.' : ''}`);
+    else add('clues', 'missed', 'Item 6 missed. Item 9 defines proactive interference as earlier learning disrupting newer learning. Sam’s case is the reverse: retroactive interference.');
+  }
+  { // 9 conf
+    if (!R.rated) add('conf', 'missed', 'No confidence ratings. Rating as you go tells you where to spend review time.');
+    else {
+      const c = R.conf;
+      const parts = [['Sure', 'sure'], ['Unsure', 'unsure'], ['Guess', 'guess']].filter(([, k]) => c[k][0]).map(([l, k]) => `${l}: ${c[k][1]} of ${c[k][0]} right`);
+      add('conf', R.rated >= R.answered * 0.8 ? 'used' : 'partial', `Rated ${R.rated} of ${R.answered} answers. ${parts.join(' · ')}.`);
+    }
+  }
+  { // 10 change
+    const tot = R.wr + R.rw + R.ww;
+    if (tot) add('change', 'used', `${tot} ${plural(tot, 'change')}: ${R.wr} wrong to right, ${R.rw} right to wrong, ${R.ww} wrong to wrong. Net ${R.net >= 0 ? '+' : ''}${num(R.net)} ${plural(Math.abs(R.net), 'point')}.`);
+    else {
+      const low = ITEMS.filter(i => { const s = A.items[i.id]; return s.ans != null && (s.conf === 'guess' || s.conf === 'unsure'); }).length;
+      if (low) add('change', 'partial', `No answers changed. You marked ${low} ${plural(low, 'answer')} Unsure or Guess; those are the ones worth a second look.`);
+      else add('change', 'na', 'No answers changed, and none were marked Unsure or Guess.');
+    }
+  }
+  { // 11 blank
+    const b = R.p1b + R.p2b;
+    if (!b) add('blank', 'used', 'Every item has an answer.');
+    else add('blank', 'missed', `${R.p1b} Part I and ${R.p2b} Part II ${plural(b, 'item')} left blank. Blind guesses would have averaged about +${num(R.blankEV)} ${plural(R.blankEV, 'point')}.`);
+  }
+  { // 12 reset
+    const r = A.reset;
+    if (r.reframed || r.wrote) add('reset', 'used', `You did the pre-exam reset${r.reframed && r.wrote ? ' (reframe and writing)' : r.wrote ? ' (writing)' : ' (reframe)'}.`);
+    else add('reset', 'na', 'Skipped. This one is optional, and the evidence is mixed.', 'Optional');
+  }
+  return out;
+}
+
+/* ================= shared view bits ================= */
+function badge(strength) { return `<span class="badge ${strength.toLowerCase()}">${strength}</span>`; }
+function note(label, text, extra) { return `<div class="note"><p class="note-label">${esc(label)}</p><p class="note-text">${esc(text)}</p>${extra || ''}</div>`; }
+function stepsHTML(steps) { return `<ul class="steps" id="steps" aria-label="Routine progress">${steps.map(([n, d]) => `<li class="${d ? 'done' : ''}">${d ? '✓ ' : ''}${esc(n)}</li>`).join('')}</ul>`; }
+function whyBox(t) {
+  return `<details class="why"><summary>Why tactic ${t.n} works</summary><p><b>${esc(t.name)}.</b> ${esc(t.research)}</p><p class="why-foot">${badge(t.strength)} <a href="#library" data-act="lib" data-t="${t.id}">Sources</a></p></details>`;
+}
+function srcList(t) {
+  return `<ul class="src">${t.src.map(k => { const s = SRC[k]; return `<li>${s.u ? `<a href="${s.u}" target="_blank" rel="noopener">${esc(s.t)}</a>` : esc(s.t)}</li>`; }).join('')}</ul>`;
+}
+function essayHasAnswer() { const e = S.A.essay; return wc(e.A.answer) > 0 || wc(e.B.answer) > 0; }
+function cellFor(i) {
+  const A = S.A, s = A.items[i.id], cls = ['cell'];
+  if (s.ans != null) cls.push('done');
+  if (s.flag) cls.push('flag');
+  const cur = A.cur === i.id && S.view === 'exam';
+  if (cur) cls.push('cur');
+  return `<button type="button" class="${cls.join(' ')}" data-act="go" data-id="${i.id}" data-fk="cell-${i.id}" aria-label="Item ${i.num}, ${s.ans != null ? 'answered' : 'blank'}${s.flag ? ', flagged' : ''}"${cur ? ' aria-current="step"' : ''}>${i.num}</button>`;
+}
+function navigatorHTML() {
+  const A = S.A;
+  const part = k => {
+    const cells = k === 'p3'
+      ? [`<button type="button" class="cell${essayHasAnswer() ? ' done' : ''}${A.cur === 'essay' && S.view === 'exam' ? ' cur' : ''}" data-act="go" data-id="essay" data-fk="cell-essay" aria-label="Essay, ${essayHasAnswer() ? 'started' : 'blank'}"${A.cur === 'essay' ? ' aria-current="step"' : ''}>Essay</button>`]
+      : ITEMS.filter(i => i.part === k).map(cellFor);
+    return `<div class="navi-part"><span class="navi-label">Part ${PARTS[k].roman}</span><div class="navi-cells">${cells.join('')}</div></div>`;
+  };
+  return `<nav class="navi" aria-label="Exam items">${part('p1')}${part('p2')}${part('p3')}<div class="navi-extra"><button type="button" class="btn ghost small" data-act="directions">Directions</button></div><div class="navi-legend" aria-hidden="true"><span><i class="lg done"></i>Answered</span><span><i class="lg"></i>Blank</span><span><i class="lg flag"></i>Flagged</span></div></nav>`;
+}
+
+/* ================= proctor bar ================= */
+function paceHTML() {
+  const A = S.A, k = phaseKey();
+  if (!k) return '';
+  if (k === 'cover' || k === 'plan') {
+    return `<div class="pace-top"><span class="pace-label">Directions and planning</span><span class="pace-text">${fmtDur(A.phase.cover + A.phase.plan)} used</span></div>`;
+  }
+  const label = PHASE_LABEL[k];
+  const used = A.phase[k];
+  if (!A.plan) return `<div class="pace-top"><span class="pace-label">${label}</span><span class="pace-text">${fmtDur(used)} used · no plan</span></div>`;
+  const plan = A.plan[k] * 60000;
+  const pct = plan > 0 ? Math.min(100, used / plan * 100) : 100;
+  const over = used > plan;
+  return `<div class="pace-top"><span class="pace-label">${label} plan</span><span class="pace-text">${fmtDur(used)} / ${fmtDur(plan)}</span></div><div class="pace-bar" role="img" aria-label="${label}: ${fmtDur(used)} used of ${fmtDur(plan)} planned"><span class="pace-fill${over ? ' over' : ''}" style="width:${pct.toFixed(1)}%"></span></div>`;
+}
+function proctorHTML() {
+  const A = S.A, coached = A.mode === 'coached', left = A.limit * 60000 - A.elapsed;
+  return `<div class="wrap proctor-in">
+    <div class="pb-id"><span class="pb-course">PSY 101 · Unit 3 exam</span><span class="pb-mode ${A.mode}">${coached ? 'Coached practice' : 'Exam conditions'}</span></div>
+    <div class="pb-clock"><span class="pb-time${left <= 300000 ? ' low' : ''}" id="pb-time" role="timer" aria-label="Time left">${fmtLeft(left)}</span><span class="pb-of">left of ${A.limit}:00</span></div>
+    <div class="pace" id="pace">${paceHTML()}</div>
+    <div class="pb-actions">${coached ? `<button type="button" class="btn small" data-act="${A.paused ? 'resume' : 'pause'}" data-fk="pb-pause">${A.paused ? 'Resume' : 'Pause'}</button>` : ''}${S.view === 'exam' ? '<button type="button" class="btn small primary" data-act="review" data-fk="pb-review">Review &amp; hand in</button>' : ''}${S.view === 'library' ? '<button type="button" class="btn small primary" data-act="libBack">Back to the exam</button>' : ''}</div>
+  </div>`;
+}
+function updateProctor() {
+  const A = S.A;
+  if (!A) return;
+  const left = A.limit * 60000 - A.elapsed;
+  const t = $('#pb-time');
+  if (t) { t.textContent = fmtLeft(left); t.classList.toggle('low', left <= 300000); }
+  const p = $('#pace');
+  if (p) p.innerHTML = paceHTML();
+  const r = $('#rv-left');
+  if (r) r.textContent = fmtLeft(left);
+}
+
+/* ================= views ================= */
+function vHome() {
+  const st = S.setup;
+  const hist = load(LS_HIST, []);
+  const modeCard = (m, title, desc) => `<label class="mode-card${st.mode === m ? ' on' : ''}"><input type="radio" name="mode" value="${m}" id="mode-${m}" data-act="setmode" data-fk="mode-${m}"${st.mode === m ? ' checked' : ''}><span class="bubble dot${st.mode === m ? ' on' : ''}" aria-hidden="true"></span><span class="mc-title">${title}</span><span class="mc-desc">${desc}</span></label>`;
+  return `<div class="wrap home">
+  <section class="hero">
+    <div class="hero-main">
+      <p class="eyebrow">Practice exam · PSY 101 · Learning and Memory</p>
+      <h1>Test Tactics Simulator</h1>
+      <p class="lede">A short, timed college exam that coaches the tactics behind good test-taking: reading every direction, budgeting time by points, decoding essay verbs, ruling out wrong answers, and eight more with research behind them. The debrief shows which tactics you used and what they were worth.</p>
+      ${resumeHTML()}
+      <form class="setup sheet" id="setup-form" novalidate>
+        <fieldset><legend class="eyebrow">Mode</legend><div class="mode-cards">
+          ${modeCard('coached', 'Coached practice', 'Margin notes in purple pen walk you through each tactic as you work. You can pause the clock.')}
+          ${modeCard('exam', 'Exam conditions', 'No coaching and no pause. The debrief shows which tactics you used.')}
+        </div></fieldset>
+        <fieldset><legend class="eyebrow">Time limit</legend>
+          <div class="segopts" role="radiogroup" aria-label="Time limit">${[20, 30, 40, 50].map(m => `<label class="segopt${st.limit === m ? ' on' : ''}"><input type="radio" class="sr-only" name="limit" value="${m}" id="limit-${m}" data-act="setlimit" data-fk="limit-${m}"${st.limit === m ? ' checked' : ''}>${m} min</label>`).join('')}</div>
+          <p class="fine">17 items and 40 points. Choose a longer limit if you get extended time on real exams.</p>
+        </fieldset>
+        <label class="check"><input type="checkbox" id="opt-reset" data-act="setreset"${st.reset ? ' checked' : ''}><span>Start with a two-minute nerves reset (optional, before the clock starts)</span></label>
+        <div class="setup-go"><button type="submit" class="btn primary big" id="start-btn">Open the exam booklet</button><p class="fine">The clock starts when the booklet opens, as it would in a real exam.</p></div>
+      </form>
+      ${S.last ? '<div><button type="button" class="btn ghost" data-act="viewLast">See your last debrief</button></div>' : ''}
+    </div>
+    ${specimenHTML()}
+  </section>
+  <section class="tindex" aria-labelledby="tindex-h">
+    <div class="tindex-head"><h2 class="h-sec" id="tindex-h">Twelve tactics, rated by the strength of their evidence</h2><a class="btn small" href="#library" data-act="lib">Read the research</a></div>
+    <ol class="tlist">${TACTICS.map(t => `<li><span class="tnum">${t.n}</span><span class="tname">${esc(t.name)}</span>${badge(t.strength)}<span class="tshort">${esc(t.short)}</span></li>`).join('')}</ol>
+  </section>
+  ${hist.length ? `<section class="sheet res-sec" aria-labelledby="hist-h"><h2 class="h-sec" id="hist-h">Your attempts on this device</h2>${histTable(hist)}</section>` : ''}
+</div>`;
+}
+function resumeHTML() {
+  const A = S.saved;
+  if (!A) return '';
+  return `<div class="resume sheet" role="region" aria-label="Unfinished attempt"><div><p class="eyebrow">Unfinished attempt</p><p>${A.mode === 'coached' ? 'Coached practice' : 'Exam conditions'} · ${fmtDur(A.elapsed)} used of ${A.limit}:00. The clock stays stopped until you resume. Starting a new session replaces it.</p></div><div class="resume-acts">${S.ui.confirmDiscard
+    ? '<span class="muted small">Discard it for good?</span><button type="button" class="btn small" data-act="cancelDiscard">Keep it</button><button type="button" class="btn small danger" data-act="confirmDiscard">Discard</button>'
+    : '<button type="button" class="btn small" data-act="discardSaved">Discard</button><button type="button" class="btn small primary" data-act="resumeSaved">Resume</button>'}</div></div>`;
+}
+function specimenHTML() {
+  return `<figure class="specimen" aria-label="Example of the practice tools on a sample item">
+    <div class="sheet spec-sheet">
+      <div class="item-head"><span>Sample item · not on the exam</span><span>2 points</span></div>
+      <div class="spec-body">
+        <p class="stem">Each of the following is a primary color of light <span class="w hl">EXCEPT</span>:</p>
+        <div class="spec-opts">
+          <div class="sopt is-elim"><span class="bubble">A</span><span>Red</span></div>
+          <div class="sopt is-elim"><span class="bubble">B</span><span>Green</span></div>
+          <div class="sopt is-sel"><span class="bubble">C</span><span>Yellow</span></div>
+          <div class="sopt"><span class="bubble">D</span><span>Blue</span></div>
+        </div>
+        <div class="spec-tools"><span class="mini-seg"><b class="on">Sure</b><b>Unsure</b><b>Guess</b></span><span class="mini-flag">${FLAG_SVG}Flag</span></div>
+      </div>
+    </div>
+    ${note('Margin note', 'EXCEPT flips the question. Mark each option true or false, strike the true ones, and the one left is your answer.')}
+    <figcaption class="spec-cap"><span>Highlight key words</span><span>Strike options you rule out</span><span>Rate confidence</span><span>Flag for review</span></figcaption>
+  </figure>`;
+}
+function histTable(h) {
+  return `<div class="tablewrap"><table class="hist"><thead><tr><th scope="col">Date</th><th scope="col">Mode</th><th scope="col">Part I</th><th scope="col">Part II</th><th scope="col">Part III</th><th scope="col">Total</th><th scope="col">Time used</th></tr></thead><tbody>${h.slice().reverse().slice(0, 10).map(r => `<tr><td>${dateStr(r.at)}</td><td>${r.mode === 'coached' ? 'Coached' : 'Exam'}</td><td>${num(r.p1)} / 20</td><td>${num(r.p2)} / 6</td><td>${r.p3 == null ? 'Not scored' : num(r.p3) + ' / 14'}</td><td><b>${num(r.total)}</b> / ${r.p3 == null ? 26 : 40}</td><td>${fmtDur(r.used)} of ${r.limit}:00</td></tr>`).join('')}</tbody></table></div><p class="fine">Stored only in this browser.</p>`;
+}
+
+let worryTimer = null, worryLeft = 120;
+function stopWorryTimer() { clearInterval(worryTimer); worryTimer = null; S.ui.worry = ''; }
+function vReset() {
+  const A = S.A;
+  return `<div class="wrap narrow page-pad">
+    <div><p class="eyebrow">Before the exam · optional · the clock has not started</p><h1 class="h-page">Two-minute reset</h1></div>
+    <div class="reset-grid">
+      <section class="sheet rcard" aria-labelledby="rf-h">
+        <h2 class="h-sub" id="rf-h">1 · Reframe the jitters</h2>
+        <p class="exam-text">A racing heart or a fluttering stomach before an exam is your body gearing up to perform. You don’t need to calm it down to do well. When you notice it during the exam, treat it as energy for the work in front of you.</p>
+        <div><button type="button" class="btn small" data-act="reframed" data-fk="reframed" aria-pressed="${A.reset.reframed}">${A.reset.reframed ? '✓ Noted' : 'Got it'}</button></div>
+      </section>
+      <section class="sheet rcard" aria-labelledby="wr-h">
+        <h2 class="h-sub" id="wr-h">2 · Write it out</h2>
+        <p class="exam-text">Spend up to two minutes writing about what’s on your mind about this exam. Be specific.</p>
+        <label for="worry" class="sr-only">Your thoughts about this exam</label>
+        <textarea id="worry" rows="6" placeholder="What’s on your mind about this exam?"></textarea>
+        <div class="rtimer"><span class="mono" id="worry-timer">${worryTimer ? (worryLeft > 0 ? fmtLeft(worryLeft * 1000) : 'Time’s up') : '2:00'}</span><span class="fine" style="margin:0">Nothing you type here is saved or sent anywhere.</span></div>
+      </section>
+    </div>
+    <p class="evid">${badge('Mixed')} These exercises helped in several studies and did nothing in others. They take two minutes, so try them and see. <a href="#library" data-act="lib" data-t="reset">Read the evidence</a></p>
+    <div class="actions"><button type="button" class="btn ghost" data-act="skipreset">Skip this step</button><button type="button" class="btn primary" data-act="toCover" data-fk="toCover">Open the exam booklet</button></div>
+  </div>`;
+}
+
+function coverSheetHTML() {
+  const A = S.A;
+  const pointed = new Set(INSTR.filter(q => A.instr.pick[q.id] != null && A.instr.pick[q.id] !== q.key).map(q => q.line));
+  const L = (id, text) => `<span class="line${pointed.has(id) ? ' pointer' : ''}" id="${id}">${text}</span>`;
+  return `<article class="sheet cover" aria-labelledby="cover-h">
+    <header class="cover-top"><span>PSY 101 · Introduction to Psychology</span><span>Form A</span></header>
+    <h1 id="cover-h">Unit 3 Exam: Learning and Memory</h1>
+    <div class="cover-meta"><span>Time limit: ${A.limit} minutes</span><span>Total: 40 points</span><span>17 items in 3 parts</span></div>
+    <section class="dir"><h2>General directions</h2><ol>
+      <li>${L('l-g1', 'This exam has three parts. Read the directions for every part before you begin.')}</li>
+      <li>${L('l-g2', 'You may answer the parts in any order.')}</li>
+      <li>${L('l-g3', 'Mark one answer per item unless the directions say otherwise.')}</li>
+    </ol></section>
+    <section class="dir"><h2>Part I · Multiple choice ${L('l-p1pts', '<span class="pts">10 items × 2 points = 20 points</span>')}</h2>
+      <p>${L('l-p1', 'Choose the one best answer for each item. Wrong answers are not penalized.')}</p></section>
+    <section class="dir"><h2>Part II · True or false <span class="pts">6 items × 1 point = 6 points</span></h2>
+      <p>${L('l-p2a', 'Mark a statement True only if every part of it is true.')} ${L('l-p2b', 'Each wrong answer subtracts ½ point. Items left blank score 0.')}</p></section>
+    <section class="dir"><h2>Part III · Short essay <span class="pts">1 response · 14 points</span></h2>
+      <p>${L('l-p3a', 'Respond to ONE of the two prompts. If you write on both, only the prompt you started first will be graded.')} ${L('l-p3b', 'An outline is optional. If you run out of time, a clear outline can earn partial credit.')}</p></section>
+    <footer class="cover-foot">Turn the page when you have read every direction.</footer>
+  </article>`;
+}
+function iqHTML() {
+  const A = S.A;
+  return `<section class="sheet iq-sec" aria-labelledby="iq-h"><h2 id="iq-h" class="h-sub">Instruction check</h2><p class="muted">Answer from the directions above. A wrong pick marks the line that settles it.</p>
+  <ol class="iq-list">${INSTR.map((q, n) => {
+    const pk = A.instr.pick[q.id], answered = pk != null, right = pk === q.key;
+    return `<li class="iq"><p class="iq-q">${esc(q.q)}</p><div class="iq-opts" role="group" aria-label="Choices for question ${n + 1}">${q.opts.map((o, k) => {
+      const cls = answered && k === pk ? (right ? ' right' : ' wrong') : '';
+      return `<button type="button" class="iq-opt${cls}" data-act="iq" data-q="${q.id}" data-i="${k}" data-fk="iq-${q.id}-${k}" aria-pressed="${k === pk}">${esc(o)}</button>`;
+    }).join('')}</div>${answered ? `<p class="fb ${right ? 'ok' : 'bad'}">${right ? 'Right. ' + esc(q.fb) : 'Not quite. Reread the line marked in purple on the cover page.'}</p>` : ''}</li>`;
+  }).join('')}</ol></section>`;
+}
+function vCover() {
+  const A = S.A, coached = A.mode === 'coached';
+  const midExam = A.stage === 'exam' || A.stage === 'review';
+  if (midExam) {
+    return `<div class="wrap page-pad"><div class="one-col"><div class="stack-col">${coverSheetHTML()}<div class="actions"><button type="button" class="btn primary" data-act="backToExam" data-fk="backToExam">${A.reviewStarted ? 'Back to review' : 'Back to the exam'}</button></div></div></div></div>`;
+  }
+  const allRight = INSTR.every(q => A.instr.pick[q.id] === q.key);
+  if (coached) {
+    return `<div class="wrap page-pad"><div class="two-col"><div class="stack-col">${coverSheetHTML()}${iqHTML()}<div class="actions">${allRight ? '' : '<span class="muted small">Answer all four correctly to continue.</span>'}<button type="button" class="btn primary" data-act="toPlan" data-fk="toPlan"${allRight ? '' : ' disabled'}>Plan your time</button></div></div>
+      <aside class="margin" aria-label="Coach notes">${note('Tactic 1 · Read every direction', 'Before answering anything, find three things on this page: how many items you must answer, how each part is scored, and whether wrong answers cost points. Then take the instruction check below. The clock is running, as it would be in a real exam.')}${whyBox(TMAP.read)}</aside></div></div>`;
+  }
+  return `<div class="wrap page-pad"><div class="one-col"><div class="stack-col">${coverSheetHTML()}<div class="actions"><button type="button" class="btn primary" data-act="toPlan" data-fk="toPlan">Turn the page</button></div></div></div></div>`;
+}
+
+function shareBars(p) {
+  const sum = p.p1 + p.p2 + p.p3 + p.review;
+  const seg = (arr, tot) => arr.map(([k, v]) => (v > 0 ? `<span class="seg-${k}" style="width:${(v / tot * 100).toFixed(2)}%"></span>` : '')).join('');
+  return `<div class="share" aria-hidden="true">
+    <div class="share-row"><span>Points</span><div class="stack">${seg([['p1', 20], ['p2', 6], ['p3', 14]], 40)}</div></div>
+    <div class="share-row"><span>Your time</span><div class="stack">${sum ? seg([['p1', p.p1], ['p2', p.p2], ['p3', p.p3], ['review', p.review]], sum) : ''}</div></div>
+    <div class="share-key"><span><i class="k-p1"></i>Part I</span><span><i class="k-p2"></i>Part II</span><span><i class="k-p3"></i>Part III</span><span><i class="k-review"></i>Review</span></div>
+  </div>`;
+}
+function planFbHTML() {
+  const c = planCalc(), p = c.p, sum = c.sum, basis = c.basis, msgs = [];
+  if (sum === 0) msgs.push(['info', 'Enter minutes for each part, or fill in a points-based plan.']);
+  else {
+    if (sum > basis) msgs.push(['bad', `Your plan uses ${sum} minutes, ${sum - basis} more than remain. Trim it to fit.`]);
+    else if (sum < basis) msgs.push(['warn', `${basis - sum} ${plural(basis - sum, 'minute')} unassigned. Add ${basis - sum === 1 ? 'it' : 'them'} to review or to a part.`]);
+    else msgs.push(['ok', `Your plan uses all ${basis} minutes.`]);
+    ['p1', 'p2', 'p3'].forEach(k => { if (p[k] === 0) msgs.push(['bad', `${PHASE_LABEL[k]} has no time. Every part needs some.`]); });
+    if (p.review === 0) msgs.push(['warn', 'No review time. A few minutes at the end let you revisit Guess and Unsure items, where changed answers tend to pay off.']);
+    const work = p.p1 + p.p2 + p.p3;
+    if (work > 0) ['p1', 'p2', 'p3'].forEach(k => {
+      const ts = p[k] / work, ps = PARTS[k].points / TOTAL;
+      if (p[k] > 0 && Math.abs(ts - ps) >= 0.12) msgs.push(['info', `${PHASE_LABEL[k]} gets ${Math.round(ts * 100)}% of your answering time and carries ${Math.round(ps * 100)}% of the points.`]);
+    });
+  }
+  return `<ul class="fb-list">${msgs.map(([k, m]) => `<li class="fb ${k}">${esc(m)}</li>`).join('')}</ul>${shareBars(p)}`;
+}
+function vPlan() {
+  const A = S.A, coached = A.mode === 'coached', d = A.planDraft, valid = planValid(planCalc());
+  const input = (k, label) => `<div class="num"><label for="plan-${k}">${label}</label><input type="number" inputmode="numeric" min="0" max="${A.planBasis}" step="1" id="plan-${k}" data-plan="${k}" value="${esc(d[k])}"><span class="unit">minutes</span></div>`;
+  const sheet = `<section class="sheet plan-sheet" aria-labelledby="plan-h">
+    <div><p class="eyebrow">Survey the exam</p><h1 id="plan-h" class="h-sheet">Plan your time</h1></div>
+    <div class="tablewrap"><table class="struct"><thead><tr><th scope="col">Part</th><th scope="col">Format</th><th scope="col" class="n">Items</th><th scope="col" class="n">Points</th><th scope="col" class="n">Share</th></tr></thead><tbody>
+      ${['p1', 'p2', 'p3'].map(k => { const P = PARTS[k]; return `<tr><td>${P.roman}</td><td>${P.name}${k === 'p2' ? ' (−½ per wrong answer)' : k === 'p3' ? ' (answer one of two)' : ''}</td><td class="n">${P.count}</td><td class="n">${P.points}</td><td class="n">${Math.round(P.points / TOTAL * 100)}%</td></tr>`; }).join('')}
+    </tbody></table></div>
+    <p>About <b>${A.planBasis} minutes</b> remain on the clock. Assign them below, keeping a few for review.</p>
+    <div class="plan-inputs">${input('p1', 'Part I')}${input('p2', 'Part II')}${input('p3', 'Part III')}${input('review', 'Review')}</div>
+    <div><button type="button" class="btn small" data-act="suggest" data-fk="suggest">Fill in a points-based plan</button></div>
+    <div id="plan-fb" aria-live="polite">${planFbHTML()}</div>
+    <div class="actions">${coached ? '' : '<button type="button" class="btn ghost" data-act="skipplan">Skip planning</button>'}<button type="button" class="btn primary" id="plan-go" data-act="useplan" data-fk="useplan"${valid ? '' : ' disabled'}>Start answering</button></div>
+  </section>`;
+  if (!coached) return `<div class="wrap page-pad"><div class="one-col">${sheet}</div></div>`;
+  return `<div class="wrap page-pad"><div class="two-col">${sheet}<aside class="margin" aria-label="Coach notes">${note('Tactic 2 · Budget time by points', 'Part I carries half the points, so it gets about half your answering time. Keep a few minutes for review at the end; that is when changed answers tend to pay off. The pace bar at the top will track each part against your plan.')}${whyBox(TMAP.plan)}</aside></div></div>`;
+}
+
+function stemHTML(i) {
+  const s = S.A.items[i.id], hl = new Set(s.hl);
+  return toks(i.stem).map((t, k) => `<span class="w${hl.has(k) ? ' hl' : ''}" data-act="hl" data-id="${i.id}" data-i="${k}">${esc(t)}</span>`).join(' ');
+}
+function mcOptions(i) {
+  const s = S.A.items[i.id];
+  return `<div class="opts" role="radiogroup" aria-labelledby="stem-${i.id}">${i.options.map((o, k) => {
+    const L = 'ABCD'[k], sel = s.ans === k, el = s.elim[k];
+    return `<div class="opt${sel ? ' is-sel' : ''}${el ? ' is-elim' : ''}">
+      <label class="opt-pick"><input type="radio" name="ans-${i.id}" value="${k}" data-act="pick" data-id="${i.id}" data-fk="pick-${i.id}-${k}"${sel ? ' checked' : ''}><span class="bubble" aria-hidden="true">${L}</span><span class="opt-text"><span class="sr-only">${L}. </span>${esc(o)}${el ? '<span class="sr-only"> (ruled out)</span>' : ''}</span></label>
+      <button type="button" class="strike" data-act="strike" data-id="${i.id}" data-i="${k}" data-fk="strike-${i.id}-${k}" aria-pressed="${el}" aria-label="${el ? 'Restore' : 'Rule out'} option ${L}">${el ? 'Restore' : 'Rule out'}</button>
+    </div>`;
+  }).join('')}</div>`;
+}
+function tfOptions(i) {
+  const s = S.A.items[i.id];
+  return `<div class="opts tf" role="radiogroup" aria-labelledby="stem-${i.id}">${[[true, 'T', 'True'], [false, 'F', 'False']].map(([v, L, lab]) => `<div class="opt${s.ans === v ? ' is-sel' : ''}"><label class="opt-pick"><input type="radio" name="ans-${i.id}" value="${v}" data-act="pick" data-id="${i.id}" data-fk="pick-${i.id}-${L}"${s.ans === v ? ' checked' : ''}><span class="bubble" aria-hidden="true">${L}</span><span class="opt-text">${lab}</span></label></div>`).join('')}</div>`;
+}
+function itemCard(i) {
+  const s = S.A.items[i.id], P = PARTS[i.part];
+  return `<article class="sheet item" aria-labelledby="stem-${i.id}">
+    <header class="item-head"><span>Part ${P.roman} · ${P.name}</span><span>${P.each} ${plural(P.each, 'point')}</span></header>
+    <div class="item-body"><div class="item-num" aria-hidden="true">${i.num}</div><div class="item-main">
+      <p class="stem" id="stem-${i.id}"><span class="sr-only">Item ${i.num}. </span>${stemHTML(i)}</p>
+      <p class="hint">Tap words in the question to highlight them.</p>
+      ${i.type === 'mc' ? mcOptions(i) : tfOptions(i)}
+      <div class="tools">
+        <div class="conf"><span class="tools-label" id="conf-${i.id}">Confidence</span><div class="segbtns" role="group" aria-labelledby="conf-${i.id}">${[['sure', 'Sure'], ['unsure', 'Unsure'], ['guess', 'Guess']].map(([v, l]) => `<button type="button" data-act="conf" data-id="${i.id}" data-v="${v}" data-fk="conf-${i.id}-${v}" aria-pressed="${s.conf === v}">${l}</button>`).join('')}</div></div>
+        <div class="tools-right">${i.type === 'tf' ? `<button type="button" class="btn small" data-act="clear" data-id="${i.id}" data-fk="clear-${i.id}"${s.ans == null ? ' disabled' : ''}>Leave blank</button>` : ''}<button type="button" class="btn small flagbtn" data-act="flag" data-id="${i.id}" data-fk="flag-${i.id}" aria-pressed="${s.flag}">${FLAG_SVG}${s.flag ? 'Flagged' : 'Flag for review'}</button></div>
+      </div>
+    </div></div>
+  </article>`;
+}
+function labelOf(id) { return id === 'essay' ? 'Essay' : 'Item ' + IMAP[id].num; }
+function itemNavHTML() {
+  const idx = ORDER.indexOf(S.A.cur), prev = idx > 0 ? ORDER[idx - 1] : null, next = idx < ORDER.length - 1 ? ORDER[idx + 1] : null;
+  return `<div class="item-nav">${prev ? `<button type="button" class="btn" data-act="prev" data-fk="prev">← ${labelOf(prev)}</button>` : '<span></span>'}${next ? `<button type="button" class="btn primary" data-act="next" data-fk="next">${labelOf(next)} →</button>` : '<button type="button" class="btn primary" data-act="review" data-fk="next">Review &amp; hand in</button>'}</div>`;
+}
+function routineHTML(k) { return note(`Part ${PARTS[k].roman} routine`, ROUTINE[k]); }
+function paceNoteHTML() {
+  const A = S.A;
+  if (!A.plan) return '';
+  const k = phaseKey();
+  if (!k || A.plan[k] == null) return '';
+  const used = A.phase[k], plan = A.plan[k] * 60000;
+  if (used <= plan) return '';
+  return `<div class="note warnnote"><p class="note-label">Pace</p><p class="note-text">You are ${fmtDur(used - plan)} past your plan for ${k === 'review' ? 'review' : PHASE_LABEL[k]}. Flag what is left and move on; you can come back.</p></div>`;
+}
+function itemSteps(i) {
+  const s = S.A.items[i.id];
+  return i.type === 'mc'
+    ? [['Key words', s.hl.length > 0], ['Rule out', s.elim.some(Boolean)], ['Choose', s.ans != null], ['Confidence', !!s.conf]]
+    : [['Qualifier', s.hl.length > 0], ['Choose', s.ans != null], ['Confidence', !!s.conf]];
+}
+function essaySteps() {
+  const e = S.A.essay, p = e.tab, ps = e[p], P = PROMPTS[p];
+  return [['Verbs', ps.checked], ['Tasks listed', ps.checked], ['Outline', wc(ps.outline) >= 5], ['Write', wc(ps.answer) >= 30], ['Check', P.tasks.every((_, k) => ps.tasks[k])]];
+}
+function marginHTML() {
+  const A = S.A, id = A.cur;
+  if (id === 'essay') {
+    const e = A.essay, p = e.tab, ps = e[p];
+    let msg;
+    if (!ps.checked) msg = 'Directive verbs tell you what kind of thinking to show. Circle every one in the prompt (a prompt often has more than one), then check them.';
+    else if (wc(ps.outline) < 5) msg = 'Use the task list as the skeleton of your outline: one line per task, in the order you will write.';
+    else if (wc(ps.answer) < 30) msg = 'Write from your outline. Keep each paragraph tied to one task.';
+    else msg = 'Before you leave, tick each task your response covers. Anything unticked is a gap to fill.';
+    const both = e.startedFirst && e.startedFirst !== p ? `<div class="note warnnote"><p class="note-label">Directions</p><p class="note-text">You started Prompt ${e.startedFirst}. Only that prompt will be graded, so time spent here earns nothing.</p></div>` : '';
+    return routineHTML('p3') + both + note(`Prompt ${p}`, msg, stepsHTML(essaySteps())) + whyBox(TMAP.verbs) + whyBox(TMAP.outline) + paceNoteHTML();
+  }
+  const i = IMAP[id];
+  return routineHTML(i.part) + note(`Item ${i.num}`, i.coach, stepsHTML(itemSteps(i))) + whyBox(TMAP[i.tactic]) + paceNoteHTML();
+}
+function refreshSteps() {
+  const el = $('#steps');
+  if (!el || !S.A || S.view !== 'exam') return;
+  const steps = S.A.cur === 'essay' ? essaySteps() : itemSteps(IMAP[S.A.cur]);
+  el.outerHTML = stepsHTML(steps);
+}
+function promptTokens(p) {
+  const ps = S.A.essay[p], P = PROMPTS[p], sel = new Set(ps.sel), target = new Set(P.verbIdx), checked = ps.checked && S.A.mode === 'coached';
+  return toks(P.text).map((t, k) => {
+    const on = sel.has(k);
+    let cls = 'tok' + (on ? ' on' : '');
+    if (checked) { if (target.has(k) && on) cls += ' found'; else if (target.has(k)) cls += ' missed'; else if (on) cls += ' extra'; }
+    return `<button type="button" class="${cls}" data-act="verb" data-p="${p}" data-i="${k}" data-fk="tok-${p}-${k}" aria-pressed="${on}">${esc(t)}</button>`;
+  }).join(' ');
+}
+function verbBlock(p) {
+  const ps = S.A.essay[p], P = PROMPTS[p];
+  if (!ps.checked) return `<div class="verbcheck"><div><button type="button" class="btn small" data-act="checkverbs" data-p="${p}" data-fk="checkverbs-${p}"${ps.sel.length ? '' : ' disabled'}>Check my verbs</button></div></div>`;
+  const sel = new Set(ps.sel), tk = toks(P.text);
+  const found = P.verbIdx.filter(k => sel.has(k)), miss = P.verbIdx.filter(k => !sel.has(k)), extra = ps.sel.filter(k => !P.verbIdx.includes(k));
+  const nm = k => { const w = tk[k].replace(/[^A-Za-z-]/g, ''); return w.charAt(0).toUpperCase() + w.slice(1); };
+  return `<div class="verbcheck"><p class="fb ${miss.length ? 'warn' : 'ok'}">You circled ${found.length} of ${P.verbIdx.length} directive verbs.${miss.length ? ` Still to find: ${miss.length}, marked with a dashed outline.` : ''}${extra.length ? ` ${extra.length} other ${plural(extra.length, 'word')} circled; only words that tell you what to do count.` : ''}</p>
+    <dl class="gloss">${P.verbIdx.map(k => `<div><dt>${esc(nm(k))}</dt><dd>${esc(VERB_GLOSS[nm(k).toLowerCase()] || '')}</dd></div>`).join('')}</dl></div>
+    <fieldset class="tasks"><legend class="step-label">Your task list · tick each task as your response covers it</legend>${P.tasks.map((t, k) => `<label class="check"><input type="checkbox" id="task-${p}-${k}" data-act="task" data-p="${p}" data-i="${k}" data-fk="task-${p}-${k}"${ps.tasks[k] ? ' checked' : ''}><span>${esc(t)}</span></label>`).join('')}</fieldset>`;
+}
+function essayCard() {
+  const A = S.A, e = A.essay, coached = A.mode === 'coached', p = e.tab, ps = e[p];
+  return `<article class="sheet item essay" aria-labelledby="essay-h">
+    <header class="item-head"><span>Part III · Short essay</span><span>14 points</span></header>
+    <div class="essay-body">
+      <h2 id="essay-h" class="essay-h">Respond to ONE prompt</h2>
+      <p class="essay-rule">If you write on both, only the prompt you started first will be graded.${e.startedFirst ? ` You started Prompt ${e.startedFirst}.` : ''}</p>
+      <div class="tabs" role="tablist" aria-label="Essay prompts">${['A', 'B'].map(x => `<button type="button" role="tab" id="tab-${x}" class="tab" aria-selected="${x === p}" aria-controls="panel-${x}" data-act="etab" data-p="${x}" data-fk="tab-${x}">Prompt ${x}${e.startedFirst === x ? ' · started' : ''}</button>`).join('')}</div>
+      <section class="prompt-panel" id="panel-${p}" role="tabpanel" aria-labelledby="tab-${p}">
+        ${coached ? '<p class="step-label">Step 1 · Decode the prompt</p>' : ''}
+        <p class="prompt">${promptTokens(p)}</p>
+        <p class="hint">${coached ? 'Tap each directive verb, the words that tell you what to do. Tap again to undo.' : 'Tap words to circle them.'}</p>
+        ${coached ? verbBlock(p) : ''}
+        <div class="field"><label for="outline-${p}" class="${coached ? 'step-label' : 'field-label'}">${coached ? 'Step 2 · Outline' : 'Outline (optional)'}</label><textarea id="outline-${p}" rows="5" data-essay="outline" data-p="${p}"${coached ? ' placeholder="One line per point, in the order you will write them"' : ''}>${esc(ps.outline)}</textarea><span class="wc" id="wc-outline-${p}">${wc(ps.outline)} words</span></div>
+        <div class="field"><label for="answer-${p}" class="${coached ? 'step-label' : 'field-label'}">${coached ? 'Step 3 · Write your response' : 'Response'}</label><textarea class="bluebook" id="answer-${p}" rows="12" data-essay="answer" data-p="${p}">${esc(ps.answer)}</textarea><span class="wc" id="wc-answer-${p}">${wc(ps.answer)} words</span></div>
+      </section>
+    </div>
+  </article>`;
+}
+function vExam() {
+  const A = S.A, coached = A.mode === 'coached', id = A.cur;
+  return `<div class="wrap">${navigatorHTML()}<div class="exam-grid${coached ? '' : ' solo'}"><div class="exam-main">${id === 'essay' ? essayCard() : itemCard(IMAP[id])}${itemNavHTML()}</div>${coached ? `<aside class="margin" id="margin" aria-label="Coach notes">${marginHTML()}</aside>` : ''}</div></div>`;
+}
+
+function vReview() {
+  const A = S.A, left = A.limit * 60000 - A.elapsed;
+  const b1 = MC.filter(i => A.items[i.id].ans == null), b2 = TF.filter(i => A.items[i.id].ans == null);
+  const fl = ITEMS.filter(i => A.items[i.id].flag);
+  const low = ITEMS.filter(i => { const c = A.items[i.id].conf; return A.items[i.id].ans != null && (c === 'guess' || c === 'unsure'); });
+  const jump = list => (list.length ? `<div class="jump">${list.map(cellFor).join('')}</div>` : '');
+  const row = (ok, title, body, extra) => `<li class="rv ${ok ? 'ok' : 'warn'}"><span class="rv-mark" aria-hidden="true">${ok ? CHECK_SVG : ALERT_SVG}</span><div><p class="rv-title">${title}</p>${body ? `<p class="rv-body">${body}</p>` : ''}${extra || ''}</div></li>`;
+  const e = A.essay, g = gradedPrompt(A);
+  let essayRow;
+  if (!g) essayRow = row(false, 'No essay response yet', 'Part III is worth 14 points. Even an outline can earn partial credit.', '<div class="jump"><button type="button" class="cell" data-act="go" data-id="essay">Essay</button></div>');
+  else {
+    const ps = e[g];
+    const both = hasText(e.A) && hasText(e.B);
+    essayRow = row(!both && wc(ps.answer) >= 30, `Essay: Prompt ${g} · ${wc(ps.answer)} ${plural(wc(ps.answer), 'word')} · outline ${wc(ps.outline)} ${plural(wc(ps.outline), 'word')}`, both ? `You wrote on both prompts. Only Prompt ${g} will be graded.` : (wc(ps.answer) < 30 ? 'The response is very short. Check it against every task in the prompt.' : 'Reread the prompt once more and confirm you answered every part.'), '<div class="jump"><button type="button" class="cell done" data-act="go" data-id="essay">Essay</button></div>');
+  }
+  const rows = [
+    row(!b1.length, b1.length ? `${b1.length} Part I ${plural(b1.length, 'item')} blank` : 'Every Part I item has an answer', b1.length ? 'Wrong answers cost nothing in Part I, so a guess can only help.' : '', jump(b1)),
+    row(!b2.length, b2.length ? `${b2.length} Part II ${plural(b2.length, 'item')} blank` : 'Every Part II item has an answer', b2.length ? 'Each wrong answer costs ½ point, but a coin-flip guess still averages +¼ point.' : '', jump(b2)),
+    row(!fl.length, fl.length ? `${fl.length} flagged ${plural(fl.length, 'item')}` : 'No flagged items', fl.length ? 'You marked these to come back to.' : '', jump(fl)),
+    row(!low.length, low.length ? `${low.length} ${plural(low.length, 'answer')} marked Unsure or Guess` : 'No Unsure or Guess answers', low.length ? 'Look at these first. Change an answer when you find a concrete reason; changed answers go from wrong to right more often than the reverse.' : '', jump(low)),
+    essayRow
+  ];
+  const coachNote = A.mode === 'coached' ? note('Tactics 9 and 10 · Review by confidence', 'Spend review time where your confidence was lowest. Change an answer when you can name the reason; don’t switch on a vague feeling.') : '';
+  return `<div class="wrap narrow page-pad"><section class="sheet review" aria-labelledby="rv-h">
+    <div><p class="eyebrow">Review pass</p><h1 id="rv-h" class="h-sheet">Before you hand it in</h1></div>
+    <p>Time left: <b class="mono" id="rv-left">${fmtLeft(left)}</b>${A.plan ? ` · You planned ${A.plan.review} ${plural(A.plan.review, 'minute')} for review.` : ''}</p>
+    <ul class="rv-list">${rows.join('')}</ul>
+    ${coachNote}
+    ${S.ui.confirmHand
+      ? '<div class="confirm" role="group" aria-label="Confirm hand-in"><p>Hand in now? You won’t be able to change answers.</p><button type="button" class="btn" data-act="cancelHand" data-fk="cancelHand">Keep working</button><button type="button" class="btn primary" data-act="confirmHand" data-fk="confirmHand">Hand it in</button></div>'
+      : '<div class="actions"><button type="button" class="btn" data-act="backToExam" data-fk="backToExam">Back to the exam</button><button type="button" class="btn primary" data-act="handin" data-fk="handin">Hand in exam</button></div>'}
+  </section></div>`;
+}
+
+function timeChartHTML(A) {
+  const pl = A.plan;
+  const rows = [
+    ['Directions and planning', A.phase.cover + A.phase.plan, null],
+    ['Part I', A.phase.p1, pl ? pl.p1 * 60000 : null],
+    ['Part II', A.phase.p2, pl ? pl.p2 * 60000 : null],
+    ['Part III', A.phase.p3, pl ? pl.p3 * 60000 : null],
+    ['Review', A.phase.review, pl ? pl.review * 60000 : null]
+  ];
+  const max = Math.max(60000, ...rows.map(r => Math.max(r[1], r[2] || 0)));
+  return `<div class="tchart">${rows.map(([l, act, plan]) => `<div class="trow"><span>${l}</span><div class="tbars">${plan != null ? `<span class="tbar plan" style="width:${(plan / max * 100).toFixed(1)}%"></span>` : ''}<span class="tbar${plan != null && act > plan * 1.15 + 30000 ? ' over' : ''}" style="width:${Math.max(0.5, act / max * 100).toFixed(1)}%"></span></div><span class="tval">${fmtDur(act)}${plan != null ? ` / ${fmtDur(plan)}` : ''}</span></div>`).join('')}</div>
+  <div class="tkey"><span><i class="k-act"></i>Actual</span>${pl ? '<span><i class="k-plan"></i>Planned</span><span><i class="k-over"></i>Well over plan</span>' : '<span>No plan was made, so only actual time is shown.</span>'}</div>`;
+}
+function calibHTML(R) {
+  return `<div class="calib">${[['Sure', 'sure'], ['Unsure', 'unsure'], ['Guess', 'guess']].map(([l, k]) => {
+    const [n, r] = R.conf[k];
+    return `<div class="crow"><span>${l}</span><div class="cbar" role="img" aria-label="${l}: ${r} of ${n} right"><span style="width:${n ? Math.round(r / n * 100) : 0}%"></span></div><span class="cval">${n ? `${r} of ${n} right` : 'none'}</span></div>`;
+  }).join('')}</div>`;
+}
+function changesHTML(R) {
+  if (!R.changes.length) return '<p class="muted">No answers changed between your first and final choice.</p>';
+  return `<ul class="chg">${R.changes.map(c => `<li><span class="mono">Item ${c.i.num}</span><span>${ansLabel(c.i, c.from)} → ${ansLabel(c.i, c.to)}</span><span class="chip ${c.kind === 'wr' ? 'used' : c.kind === 'rw' ? 'missed' : 'na'}">${c.kind === 'wr' ? 'Wrong to right' : c.kind === 'rw' ? 'Right to wrong' : 'Wrong to wrong'}</span></li>`).join('')}</ul>`;
+}
+function paras(t) { return String(t || '').split(/\n+/).map(x => x.trim()).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join(''); }
+function essayScoreHTML(A, R) {
+  if (!R.graded) return '<section class="sheet res-sec"><h2 class="h-sec">Part III self-score</h2><p>No essay response was written, so Part III scores 0.</p></section>';
+  const g = R.graded, P = PROMPTS[g], ps = A.essay[g], marks = A.rubric[g] || [];
+  return `<section class="sheet res-sec" aria-labelledby="es-h" id="essay-score"><h2 id="es-h" class="h-sec">Part III self-score</h2>
+    <p class="muted">Compare your response with the rubric and tick each point it earns. Credit only what is on the page.${R.bothWritten ? ` You wrote on both prompts; Prompt ${g} is the one graded.` : ''}</p>
+    <div class="es-grid">
+      <div class="es-text min0"><p class="eyebrow">Prompt ${g}</p><p class="es-prompt">${esc(P.text)}</p>
+        <p class="eyebrow">Your response · ${wc(ps.answer)} words</p><div class="es-box">${paras(ps.answer) || '<p class="muted">No response text.</p>'}</div>
+        ${wc(ps.outline) ? `<p class="eyebrow">Your outline</p><div class="es-box">${paras(ps.outline)}</div>` : ''}
+        ${wc(ps.answer) < 30 && wc(ps.outline) > 0 ? '<p class="fine">The directions allow partial credit for a clear outline, so you may count rubric points your outline clearly covers.</p>' : ''}
+      </div>
+      <div class="es-rubric min0"><fieldset><legend class="eyebrow">Rubric · 14 points</legend>${P.rubric.map((r, k) => `<label class="check rub"><input type="checkbox" id="rub-${g}-${k}" data-act="rub" data-p="${g}" data-i="${k}" data-fk="rub-${g}-${k}"${marks[k] ? ' checked' : ''}><span>${esc(r.t)}</span><b class="mono">${r.pts}</b></label>`).join('')}</fieldset>
+        <p class="es-total">Self-score: <b class="mono">${num(R.p3)}</b> / 14 ${R.p3Scored ? '' : '<span class="muted small">(not in your total until you tick a point or confirm)</span>'}</p>
+        ${R.p3Scored ? '' : '<div><button type="button" class="btn small" data-act="confirmEssay" data-fk="confirmEssay">Count this score</button></div>'}
+        <details class="model"><summary>Model outline</summary><ul>${P.model.map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>
+      </div>
+    </div></section>`;
+}
+function itemReviewHTML(A) {
+  const one = i => {
+    const s = A.items[i.id], a = s.ans, right = a != null && a === i.key, pts = itemPoints(i, a);
+    const opts = i.type === 'mc' ? `<ol class="ir-opts" type="A">${i.options.map((o, k) => `<li class="${k === i.key ? 'key' : ''}${k === a ? ' mine' : ''}">${esc(o)}</li>`).join('')}</ol>` : '';
+    const changed = s.firstSet && s.ans != null && s.ans !== s.first;
+    return `<div class="ir"><div class="ir-num">${i.num}</div><div class="ir-main"><p class="ir-stem">${esc(i.stem)}</p>${opts}
+      <p class="ir-meta"><span class="chip ${a == null ? 'na' : right ? 'used' : 'missed'}">${a == null ? 'Blank' : right ? 'Right' : 'Wrong'}</span><span>Your answer: <b>${ansLabel(i, a)}</b></span><span>Key: <b>${ansLabel(i, i.key)}</b></span><span class="mono">${pts > 0 ? '+' : ''}${num(pts)}</span>${s.conf ? `<span>You said: ${CONF_L[s.conf]}</span>` : ''}${changed ? `<span>Changed from ${ansLabel(i, s.first)}</span>` : ''}</p>
+      <details><summary>Explanation</summary><p>${esc(i.explain)}</p><p class="muted small">Tactic ${TMAP[i.tactic].n}: ${esc(TMAP[i.tactic].name)}</p></details></div></div>`;
+  };
+  return `<p class="part-h">Part I · Multiple choice</p><div class="ir-list">${MC.map(one).join('')}</div><p class="part-h">Part II · True or false</p><div class="ir-list">${TF.map(one).join('')}</div>`;
+}
+function summaryText(A, R, T) {
+  const lines = [
+    'Test Tactics Simulator · PSY 101 Unit 3 practice exam',
+    `Mode: ${A.mode === 'coached' ? 'Coached practice' : 'Exam conditions'} · ${dateStr(A.finishedAt)}`,
+    `Score: ${num(R.total)} / ${R.p3Scored ? 40 : 26} (Part I ${num(R.p1)}/20 · Part II ${num(R.p2)}/6 · Part III ${R.p3Scored ? num(R.p3) + '/14 self-scored' : 'not scored'})`,
+    `Time used: ${fmtDur(A.endElapsed)} of ${A.limit}:00${A.timeUp ? ' (time ran out)' : ''}`,
+    'Tactics:'
+  ];
+  T.forEach(x => lines.push(`${x.t.n}. ${x.t.name}: ${x.label}. ${x.text}`));
+  return lines.join('\n');
+}
+function vResults() {
+  const A = S.A, R = analyze(A), T = evalTactics(A, R);
+  const used = T.filter(x => x.status === 'used').length;
+  return `<div class="wrap res">
+    <header class="sheet res-head">
+      <p class="eyebrow">PSY 101 · Unit 3 exam · ${A.mode === 'coached' ? 'Coached practice' : 'Exam conditions'} · ${dateStr(A.finishedAt)}</p>
+      ${A.timeUp ? '<p class="banner warn">Time ran out. Your answers were collected when the clock reached 0:00.</p>' : ''}
+      <div class="score-row">
+        <div class="score-main"><span class="score-big">${num(R.total)}</span><span class="score-of">/ ${R.p3Scored ? 40 : 26}${R.p3Scored ? '' : ' scored so far'}</span></div>
+        <dl class="part-scores">
+          <div><dt>Part I</dt><dd>${num(R.p1)} / 20</dd><dd class="sub">${R.p1c} right · ${R.p1b} blank</dd></div>
+          <div><dt>Part II</dt><dd>${num(R.p2)} / 6</dd><dd class="sub">${R.p2c} right · ${R.p2w} wrong · ${R.p2b} blank</dd></div>
+          <div><dt>Part III</dt><dd>${R.p3Scored ? num(R.p3) + ' / 14' : 'Self-score'}</dd><dd class="sub">${R.graded ? (R.p3Scored ? 'Prompt ' + R.graded : '<a href="#essay-score">Score it below</a>') : 'No response'}</dd></div>
+          <div><dt>Time used</dt><dd>${fmtDur(A.endElapsed)}</dd><dd class="sub">of ${A.limit}:00</dd></div>
+        </dl>
+      </div>
+      <div class="res-acts"><button type="button" class="btn primary" data-act="home" data-fk="again">Practice again</button><button type="button" class="btn" data-act="copy" data-fk="copy">Copy debrief summary</button><a class="btn ghost" href="#library" data-act="lib">Read the research</a></div>
+      ${S.ui.copyFallback ? `<div class="copybox"><label for="copy-text" class="fine" style="margin:0">Copying isn’t available here. Select the text below and copy it.</label><textarea id="copy-text" readonly>${esc(summaryText(A, R, T))}</textarea></div>` : ''}
+    </header>
+    <section class="sheet res-sec" aria-labelledby="tr-h"><h2 id="tr-h" class="h-sec">Tactic report</h2><p class="muted">What your answers, clicks and clock show about each tactic. You used ${used} of 12.</p>
+      <div class="tr-list">${T.map(x => `<div class="tr"><div class="tr-name"><span class="tnum">${x.t.n}</span><span>${esc(x.t.name)}</span></div><span><span class="chip ${x.status}">${x.label}</span></span><p class="tr-obs">${esc(x.text)}</p></div>`).join('')}</div>
+    </section>
+    <div class="two-sec">
+      <section class="sheet res-sec" aria-labelledby="tc-h"><h2 id="tc-h" class="h-sec">Time: plan versus actual</h2>${timeChartHTML(A)}</section>
+      <section class="sheet res-sec" aria-labelledby="cc-h"><h2 id="cc-h" class="h-sec">Confidence and changes</h2><p class="muted small">Accuracy by the confidence you recorded</p>${calibHTML(R)}<p class="muted small" style="margin-top:6px">Answers you changed</p>${changesHTML(R)}<p class="research-line">For comparison: among 1,561 introductory psychology students, 51% of answer changes went from wrong to right and 25% from right to wrong (Kruger, Wirtz &amp; Miller, 2005).</p></section>
+    </div>
+    ${essayScoreHTML(A, R)}
+    <section class="sheet res-sec" aria-labelledby="ir-h"><h2 id="ir-h" class="h-sec">Item by item</h2>${itemReviewHTML(A)}</section>
+    <section class="sheet res-sec" aria-labelledby="h-h"><h2 id="h-h" class="h-sec">Your attempts on this device</h2>${histTable(load(LS_HIST, []))}</section>
+  </div>`;
+}
+
+function vLibrary() {
+  const A = S.A, inExam = A && !A.submitted && S.libFrom && S.libFrom !== 'home';
+  return `<div class="wrap lib">
+    <header class="lib-head"><p class="eyebrow">The research</p><h1 class="h-page">What the evidence says about each tactic</h1>
+      <p class="lede">Tactics protect points you earned by studying; they can’t replace studying. Across 28 experiments, test preparation raised scores on large-scale tests by about a quarter of a standard deviation (Hao et al., 2025). Each card says what to do, what the research shows, and how strong that evidence is.</p>
+      <div class="legend">${STRENGTH_DEF.map(([k, d]) => `<div>${badge(k)}<span>${d}</span></div>`).join('')}</div>
+      <div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="libBack">${inExam ? 'Back to the exam' : 'Back'}</button></div>
+    </header>
+    <div class="tcards">${TACTICS.map(t => `<article class="sheet tcard" id="t-${t.id}"><div class="tcard-top"><span class="tnum">Tactic ${t.n}</span>${badge(t.strength)}</div><h3>${esc(t.name)}</h3><p class="tc-p"><span class="tc-label">Do</span>${esc(t.do)}</p><p class="tc-p"><span class="tc-label">Evidence</span>${esc(t.research)}</p>${srcList(t)}</article>`).join('')}</div>
+    <div class="lib-two">
+      <section class="sheet myths" aria-labelledby="my-h"><h2 id="my-h" class="h-sec">Popular advice that doesn’t hold up</h2>
+        <div class="myth"><b>“Stick with your first instinct.”</b><p>Changed answers go from wrong to right about twice as often as the reverse (Kruger et al., 2005; Liu et al., 2015). Change an answer when you can name the reason.</p></div>
+        <div class="myth"><b>“Underline NOT and you’re covered.”</b><p>Students who mark the negative word still answer as if the question were positive (Chiavaroli, 2017). Restate the question and mark each option true or false.</p></div>
+        <div class="myth"><b>“When in doubt, pick C.”</b><p>Across 1,925 faculty-written exam items, correct answers were spread evenly from A to E (Rush, Rankin &amp; White, 2016). The same study found the longest option was correct in about one item in five, a flaw careful writers avoid, so treat length as a last-resort tiebreaker at most.</p></div>
+        <div class="myth"><b>“Start with a brain dump” and “cover the options and predict.”</b><p>Both are popular and reasonable, but the research review behind this simulator found no controlled studies of their effect on exam scores. Try them in practice and keep what works for you.</p></div>
+      </section>
+      <section class="sheet myths" aria-labelledby="gl-h"><h2 id="gl-h" class="h-sec">Directive verbs</h2><p class="muted small">The words in an essay prompt that tell you what kind of thinking to show.</p>
+        <dl class="glossary">${GLOSSARY.map(([w, d]) => `<div><dt>${w}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl>
+      </section>
+    </div>
+  </div>`;
+}
+
+/* ================= render ================= */
+function render() {
+  const ae = document.activeElement;
+  const fk = ae && ae.getAttribute ? ae.getAttribute('data-fk') : null;
+  const A = S.A;
+  const live = A && !A.submitted && A.stage !== 'reset';
+  const showProctor = !!(live && ['cover', 'plan', 'exam', 'review'].includes(S.view)) || !!(live && S.view === 'library' && S.libFrom && S.libFrom !== 'home');
+  const pr = $('#proctor');
+  pr.innerHTML = showProctor ? proctorHTML() : '';
+  pr.hidden = !showProctor;
+  let html = '';
+  switch (S.view) {
+    case 'reset': html = vReset(); break;
+    case 'cover': html = vCover(); break;
+    case 'plan': html = vPlan(); break;
+    case 'exam': html = vExam(); break;
+    case 'review': html = vReview(); break;
+    case 'results': html = vResults(); break;
+    case 'library': html = vLibrary(); break;
+    default: html = vHome();
+  }
+  const view = $('#view');
+  view.innerHTML = html;
+  const paused = !!(showProctor && A && A.paused);
+  view.hidden = paused;
+  const pc = $('#pausecover');
+  pc.hidden = !paused;
+  pc.innerHTML = paused ? '<div class="sheet pause-card"><p class="eyebrow">Clock paused</p><p>The exam is hidden while the clock is stopped.</p><button type="button" class="btn primary" data-act="resume">Resume</button></div>' : '';
+  if (S.view === 'reset') { const ta = $('#worry'); if (ta) ta.value = S.ui.worry || ''; }
+  if (fk) { const el = document.querySelector('[data-fk="' + fk.replace(/"/g, '') + '"]'); if (el) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } }
+}
+function rerender() { render(); persistSoon(); }
+
+/* ================= events ================= */
+const ACT = {
+  go: el => go(el.dataset.id),
+  prev: () => stepItem(-1),
+  next: () => stepItem(1),
+  strike: el => {
+    const id = el.dataset.id, k = +el.dataset.i, s = S.A.items[id];
+    s.elim[k] = !s.elim[k];
+    if (s.elim[k]) { s.elimUsed = true; if (k === IMAP[id].key) s.struckKey = true; if (s.ans === k) s.ans = null; }
+    rerender();
+  },
+  hl: el => {
+    const s = S.A.items[el.dataset.id], k = +el.dataset.i, at = s.hl.indexOf(k);
+    if (at >= 0) s.hl.splice(at, 1); else s.hl.push(k);
+    el.classList.toggle('hl', at < 0);
+    refreshSteps(); persistSoon();
+  },
+  conf: el => { const s = S.A.items[el.dataset.id]; s.conf = s.conf === el.dataset.v ? null : el.dataset.v; rerender(); },
+  flag: el => { const s = S.A.items[el.dataset.id]; s.flag = !s.flag; rerender(); },
+  clear: el => { S.A.items[el.dataset.id].ans = null; rerender(); },
+  etab: el => { S.A.essay.tab = el.dataset.p; rerender(); },
+  verb: el => {
+    const ps = S.A.essay[el.dataset.p], k = +el.dataset.i, at = ps.sel.indexOf(k);
+    if (at >= 0) ps.sel.splice(at, 1); else ps.sel.push(k);
+    rerender();
+  },
+  checkverbs: el => { S.A.essay[el.dataset.p].checked = true; rerender(); },
+  pause: () => pause(),
+  resume: () => resume(),
+  review: () => openReview(),
+  backToExam: () => { if (S.view === 'cover' && S.A.reviewStarted) { S.view = 'review'; render(); scrollTop(); } else go(S.A.cur); },
+  directions: () => openDirections(),
+  handin: () => { S.ui.confirmHand = true; render(); },
+  cancelHand: () => { S.ui.confirmHand = false; render(); },
+  confirmHand: () => { finalize(); S.view = 'results'; render(); scrollTop(); },
+  reframed: () => { S.A.reset.reframed = true; rerender(); },
+  skipreset: () => { S.A.reset.skipped = true; openCover(); },
+  toCover: () => openCover(),
+  iq: el => {
+    const A = S.A, q = INSTR.find(x => x.id === el.dataset.q), i = +el.dataset.i;
+    if (A.instr.first[q.id] === undefined) A.instr.first[q.id] = (i === q.key);
+    A.instr.pick[q.id] = i;
+    rerender();
+  },
+  toPlan: () => toPlan(),
+  suggest: () => { const A = S.A, g = suggestPlan(A.planBasis); A.planDraft = { p1: String(g.p1), p2: String(g.p2), p3: String(g.p3), review: String(g.review) }; rerender(); },
+  useplan: () => beginAnswering(false),
+  skipplan: () => beginAnswering(true),
+  resumeSaved: () => resumeSaved(),
+  discardSaved: () => { S.ui.confirmDiscard = true; render(); },
+  cancelDiscard: () => { S.ui.confirmDiscard = false; render(); },
+  confirmDiscard: () => { removeKey(LS_CUR); S.saved = null; S.ui.confirmDiscard = false; render(); },
+  home: () => { S.view = 'home'; S.ui.copyFallback = false; render(); scrollTop(); },
+  viewLast: () => { S.A = S.last; S.view = 'results'; render(); scrollTop(); },
+  lib: el => openLibrary(el.dataset.t),
+  libBack: () => closeLibrary(),
+  toastx: () => hideToast(),
+  confirmEssay: () => { S.A.essayScored = true; afterScore(); },
+  copy: () => {
+    const A = S.A, R = analyze(A), text = summaryText(A, R, evalTactics(A, R));
+    const fallback = () => { S.ui.copyFallback = true; render(); const ta = $('#copy-text'); if (ta) { ta.focus(); ta.select(); } };
+    try {
+      navigator.clipboard.writeText(text).then(() => toast('Debrief summary copied. Paste it wherever your instructor collects it.', 'info'), fallback);
+    } catch (e) { fallback(); }
+  }
+};
+const CHG = {
+  pick: el => {
+    const id = el.dataset.id, i = IMAP[id], s = S.A.items[id];
+    const v = i.type === 'mc' ? +el.value : el.value === 'true';
+    s.ans = v; s.ansAt = S.A.elapsed;
+    if (i.type === 'mc' && s.elim[v]) s.elim[v] = false;
+    rerender();
+  },
+  setmode: el => {
+    const st = S.setup;
+    st.mode = el.value;
+    if (!st.touchedLimit) st.limit = st.mode === 'coached' ? 40 : 30;
+    if (!st.touchedReset) st.reset = st.mode === 'coached';
+    render();
+  },
+  setlimit: el => { S.setup.limit = +el.value; S.setup.touchedLimit = true; render(); },
+  setreset: el => { S.setup.reset = el.checked; S.setup.touchedReset = true; },
+  task: el => { S.A.essay[el.dataset.p].tasks[+el.dataset.i] = el.checked; refreshSteps(); persistSoon(); },
+  rub: el => {
+    const A = S.A, g = el.dataset.p;
+    if (!A.rubric[g]) A.rubric[g] = [];
+    A.rubric[g][+el.dataset.i] = el.checked;
+    A.essayScored = true;
+    afterScore();
+  }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  if (el.tagName === 'INPUT') return;
+  const h = ACT[el.dataset.act];
+  if (!h) return;
+  if (el.disabled) return;
+  e.preventDefault();
+  accumulate();
+  h(el, e);
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  const act = el.dataset ? el.dataset.act : null;
+  if (act && CHG[act]) { accumulate(); CHG[act](el, e); return; }
+  if (el.dataset && el.dataset.essay) { const m = $('#margin'); if (m && S.A && S.view === 'exam') m.innerHTML = marginHTML(); }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.id === 'worry') {
+    S.ui.worry = el.value;
+    if (el.value.trim() && S.A) S.A.reset.wrote = true;
+    if (!worryTimer && el.value.trim()) {
+      worryLeft = 120;
+      worryTimer = setInterval(() => {
+        worryLeft--;
+        const t = $('#worry-timer');
+        if (t) t.textContent = worryLeft > 0 ? fmtLeft(worryLeft * 1000) : 'Time’s up';
+        if (worryLeft <= 0) clearInterval(worryTimer);
+      }, 1000);
+    }
+    return;
+  }
+  if (el.dataset && el.dataset.plan && S.A) {
+    S.A.planDraft[el.dataset.plan] = el.value;
+    const fb = $('#plan-fb'); if (fb) fb.innerHTML = planFbHTML();
+    const b = $('#plan-go'); if (b) b.disabled = !planValid(planCalc());
+    persistSoon();
+    return;
+  }
+  if (el.dataset && el.dataset.essay && S.A) {
+    accumulate();
+    const A = S.A, p = el.dataset.p, f = el.dataset.essay, e2 = A.essay, ps = e2[p];
+    ps[f] = el.value;
+    if (ps[f + 'At'] == null && el.value.trim()) ps[f + 'At'] = A.elapsed;
+    if (el.value.trim()) {
+      if (!e2.startedFirst) e2.startedFirst = p;
+      else if (e2.startedFirst !== p && !e2.warnedBoth && A.mode === 'coached') {
+        e2.warnedBoth = true;
+        toast(`The directions say to answer one prompt. Only Prompt ${e2.startedFirst} will be graded.`, 'coach');
+      }
+    }
+    const w = $('#wc-' + f + '-' + p); if (w) w.textContent = wc(el.value) + ' words';
+    const c = document.querySelector('.cell[data-id="essay"]'); if (c) c.classList.toggle('done', essayHasAnswer());
+    refreshSteps();
+    persistSoon();
+  }
+});
+document.addEventListener('submit', e => {
+  if (e.target && e.target.id === 'setup-form') { e.preventDefault(); startSession(); }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) { accumulate(); persist(); } });
+window.addEventListener('pagehide', () => { accumulate(); persist(); });
+
+/* ================= init ================= */
+(function init() {
+  const cur = load(LS_CUR, null);
+  if (cur && cur.v === 1 && !cur.submitted && cur.items && cur.essay) S.saved = cur;
+  const last = load(LS_LAST, null);
+  if (last && last.v === 1 && last.submitted && last.items) S.last = last;
+  if (location.hash === '#library') { S.libFrom = 'home'; S.view = 'library'; }
+  render();
+})();
+
+})();
+</script>
+</body>
+</html>
